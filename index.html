@@ -231,8 +231,16 @@
       <section id="hackathons" class="tab-panel">
         <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div><h2 class="text-xl font-bold">Hackathon Discovery</h2><p class="text-sm text-slate-600 dark:text-slate-400">Mock data is included for reliable demos. Refresh attempts public feeds through a CORS helper; production deployments should use a backend proxy.</p></div>
-            <button id="refreshHackathonsBtn" class="rounded-md bg-brand px-3 py-2 font-semibold text-white"><i class="fa-solid fa-arrows-rotate mr-2"></i>Refresh</button>
+            <div><h2 class="text-xl font-bold">Hackathon Discovery</h2><p class="text-sm text-slate-600 dark:text-slate-400">Refresh uses the app's free Vercel `/api/hackathons` route. Devpost is live when available; Devfolio/Unstop use reliable fallback entries until stable public APIs are added.</p></div>
+            <div class="flex flex-wrap gap-2">
+              <select id="hackathonModeFilter" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink">
+                <option value="All">All modes</option>
+                <option value="Online">Online</option>
+                <option value="Offline">Offline</option>
+                <option value="Hybrid">Hybrid</option>
+              </select>
+              <button id="refreshHackathonsBtn" class="rounded-md bg-brand px-3 py-2 font-semibold text-white"><i class="fa-solid fa-arrows-rotate mr-2"></i>Refresh</button>
+            </div>
           </div>
           <p id="hackathonStatus" class="mt-3 text-sm text-slate-600 dark:text-slate-400"></p>
           <div id="hackathonGrid" class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3"></div>
@@ -270,6 +278,7 @@
                   <option value="quant">Quant Drill</option>
                   <option value="verbal">Verbal Drill</option>
                   <option value="reading">Reading Comprehension</option>
+                  <option value="logical">Logical Reasoning</option>
                   <option value="ielts">IELTS Practice</option>
                 </select>
                 <select id="aptitudeTopic" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"></select>
@@ -640,6 +649,7 @@
     const aptitudeTopics = {
       Quant: ['Percentages', 'Profit & Loss', 'Ratio & Proportion', 'Time & Work', 'Time Speed Distance', 'Averages', 'Number System', 'Permutations & Combinations', 'Probability', 'Data Interpretation'],
       Verbal: ['Grammar', 'Vocabulary', 'Synonyms & Antonyms', 'Sentence Correction', 'Para Jumbles', 'Critical Reasoning', 'Fill in the Blanks'],
+      Logical: ['Syllogisms', 'Blood Relations', 'Directions', 'Coding-Decoding', 'Series', 'Seating Arrangement', 'Puzzles', 'Clocks & Calendars'],
       Reading: ['Main Idea', 'Inference', 'Tone', 'Detail Questions', 'Vocabulary in Context', 'Summary'],
       IELTS: ['Listening Strategy', 'Reading Skimming', 'Writing Task 1', 'Writing Task 2', 'Speaking Part 1', 'Speaking Part 2', 'Speaking Part 3']
     };
@@ -652,6 +662,11 @@
       { area: 'Verbal', topic: 'Grammar', difficulty: 'Easy', q: 'Choose the correct sentence.', options: ['She do not like tea.', 'She does not likes tea.', 'She does not like tea.', 'She not like tea.'], answer: 2, explain: 'With does, the main verb stays base form: like.' },
       { area: 'Verbal', topic: 'Vocabulary', difficulty: 'Medium', q: 'Closest meaning of "pragmatic"?', options: ['Idealistic', 'Practical', 'Careless', 'Decorative'], answer: 1, explain: 'Pragmatic means practical and results-focused.' },
       { area: 'Verbal', topic: 'Critical Reasoning', difficulty: 'Medium', q: 'A claim says productivity rose after remote work began. Which weakens it most?', options: ['Employees like remote work.', 'The company also introduced automation at the same time.', 'Office rent decreased.', 'Meetings became shorter.'], answer: 1, explain: 'Automation is an alternate cause for productivity rise.' },
+      { area: 'Logical', topic: 'Syllogisms', difficulty: 'Easy', q: 'All engineers are problem solvers. Some problem solvers are designers. Which conclusion definitely follows?', options: ['All engineers are designers', 'Some designers are engineers', 'All engineers are problem solvers', 'No designer is an engineer'], answer: 2, explain: 'The first statement directly guarantees all engineers are problem solvers.' },
+      { area: 'Logical', topic: 'Directions', difficulty: 'Easy', q: 'A person walks 5 km north, then 3 km east, then 5 km south. How far is he from the start?', options: ['3 km east', '5 km east', '8 km', '13 km'], answer: 0, explain: 'North and south cancel out; only 3 km east remains.' },
+      { area: 'Logical', topic: 'Coding-Decoding', difficulty: 'Medium', q: 'If CAT is coded as DBU, how is DOG coded in the same pattern?', options: ['EPH', 'CNG', 'EPI', 'FPH'], answer: 0, explain: 'Each letter shifts by +1: D->E, O->P, G->H.' },
+      { area: 'Logical', topic: 'Series', difficulty: 'Medium', q: 'Find the next number: 2, 6, 12, 20, 30, ?', options: ['38', '40', '42', '44'], answer: 2, explain: 'Differences are 4,6,8,10, so next difference is 12; answer 42.' },
+      { area: 'Logical', topic: 'Blood Relations', difficulty: 'Medium', q: 'Pointing to a boy, Aman says, "He is the son of my only brother." How is the boy related to Aman?', options: ['Son', 'Nephew', 'Brother', 'Cousin'], answer: 1, explain: 'The son of Aman’s brother is Aman’s nephew.' },
       { area: 'Reading', topic: 'Main Idea', difficulty: 'Easy', q: 'A passage argues that sleep improves memory, mood, and attention. What is the main idea?', options: ['Sleep wastes time', 'Sleep supports cognitive performance', 'Mood is unrelated to sleep', 'Attention cannot improve'], answer: 1, explain: 'The passage supports sleep as beneficial for cognition.' },
       { area: 'Reading', topic: 'Inference', difficulty: 'Medium', q: 'If a passage says demand rose despite higher prices, what can be inferred?', options: ['The product may be highly valued', 'Prices always reduce demand', 'Demand disappeared', 'Supply was unlimited'], answer: 0, explain: 'Rising demand despite price suggests strong perceived value.' },
       { area: 'IELTS', topic: 'Reading Skimming', difficulty: 'Easy', q: 'In IELTS Reading, what is skimming mainly used for?', options: ['Finding exact dates', 'Understanding overall idea quickly', 'Checking grammar', 'Writing examples'], answer: 1, explain: 'Skimming gives gist before answering detailed questions.' },
@@ -891,6 +906,7 @@
       byId('problemSearch').addEventListener('input', renderProblems);
       byId('contestForm').addEventListener('submit', saveContest);
       byId('refreshHackathonsBtn').addEventListener('click', refreshHackathons);
+      byId('hackathonModeFilter').addEventListener('change', renderHackathons);
       byId('fetchLeetcodeBtn').addEventListener('click', fetchLeetcode);
       byId('parseJobBtn').addEventListener('click', parseJobSummary);
       byId('jobForm').addEventListener('submit', saveJob);
@@ -1198,7 +1214,9 @@
     }
 
     function renderHackathons() {
-      byId('hackathonGrid').innerHTML = (state.hackathons || generateMockHackathons()).map(h => `
+      const mode = byId('hackathonModeFilter')?.value || 'All';
+      const rows = (state.hackathons || generateMockHackathons()).filter(h => mode === 'All' || String(h.mode || '').toLowerCase().includes(mode.toLowerCase()));
+      byId('hackathonGrid').innerHTML = rows.map(h => `
         <article class="rounded-lg border border-slate-300 p-4 dark:border-line">
           <div class="flex items-start justify-between gap-3"><h3 class="font-bold">${escapeHtml(h.name)}</h3>${badge(h.platform)}</div>
           <dl class="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-400">
@@ -1208,6 +1226,7 @@
           </dl>
           <a class="mt-4 inline-flex rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white" href="${escapeAttr(h.link)}" target="_blank" rel="noreferrer">Apply <i class="fa-solid fa-arrow-up-right-from-square ml-2"></i></a>
         </article>`).join('');
+      if (!rows.length) byId('hackathonGrid').innerHTML = '<p class="text-sm text-slate-500">No hackathons match this mode filter.</p>';
     }
 
     async function fetchLeetcode() {
@@ -2002,10 +2021,10 @@ Response format:
       const fallback = [
         ['Quant foundation', '20 min percentages/ratio + 10 MCQs'],
         ['Verbal accuracy', '15 min grammar + 10 sentence correction questions'],
+        ['Logical reasoning', '15 min series/directions + 10 reasoning questions'],
         ['Reading stamina', '1 passage timed in 12 minutes + review mistakes'],
         ['IELTS writing', 'Write one Task 2 intro + outline'],
         ['Mixed test', '15-question mixed drill under timer'],
-        ['Vocabulary', '20 words + 5 contextual usage questions'],
         ['Review', 'Redo wrong questions and update notes']
       ];
       const focus = weak.length ? weak.slice(0, 4) : [];
@@ -2033,6 +2052,7 @@ Response format:
       const refs = [
         ['Quant', 'CareerRide Aptitude / Feel Free To Learn', `https://www.youtube.com/results?search_query=${encodeURIComponent(topic + ' aptitude shortcut')}`],
         ['Verbal', 'GMAT Ninja / English with Lucy', `https://www.youtube.com/results?search_query=${encodeURIComponent(topic + ' verbal aptitude')}`],
+        ['Logical', 'CareerRide / Freshersworld reasoning', `https://www.youtube.com/results?search_query=${encodeURIComponent(topic + ' logical reasoning aptitude')}`],
         ['Reading', 'IELTS Liz / E2 IELTS', 'https://www.youtube.com/results?search_query=IELTS+reading+skimming+scanning+practice'],
         ['IELTS', 'IELTS Liz, E2 IELTS, Fastrack IELTS', 'https://www.youtube.com/results?search_query=IELTS+writing+task+2+band+7+structure']
       ];
@@ -2070,7 +2090,7 @@ Response format:
 Focus mode: ${areaMode}.
 Weak topics: ${JSON.stringify(weak)}.
 Return STRICT JSON only:
-{"questions":[{"area":"Quant|Verbal|Reading|IELTS","topic":"...","difficulty":"Easy|Medium|Hard","q":"question","options":["A","B","C","D"],"answer":0,"explain":"short explanation"}]}`;
+{"questions":[{"area":"Quant|Verbal|Logical|Reading|IELTS","topic":"...","difficulty":"Easy|Medium|Hard","q":"question","options":["A","B","C","D"],"answer":0,"explain":"short explanation"}]}`;
       try {
         const text = await callAiForResume(prompt, { purpose: 'aptitude-mcq-generation' });
         const jsonText = text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1);

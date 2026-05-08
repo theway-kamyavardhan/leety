@@ -53,7 +53,7 @@ The AI Coach uses `/api/ai-coach`, a Vercel serverless function, so your OpenRou
 - The Sheets tab includes a built-in high-priority starter integration for NeetCode 150 and Striver SDE Sheet, with links back to the official/canonical sheet pages for the full lists.
 - AI Coach now supports coach modes: Execution Coach, DSA Mentor, Career Strategist, Monthly Reviewer, and Strict Accountability. It sends tracker summaries, sheet progress, weak topics, due revisions, follow-ups, mock logs, and health load into a structured prompt.
 - The Resume tab lets you upload/paste a master resume, paste a job description, generate an AI-tailored ATS-friendly draft, and view a heuristic ATS confidence score with matched/missing keywords. Resume data stays in localStorage unless you export all data.
-- The Aptitude + IELTS tab runs diagnostics and adaptive MCQ practice across Quant, Verbal, Reading Comprehension, and IELTS. It scores tests, identifies weak topics, updates a 7-day plan, can ask AI for new MCQs, and exports a portable `soul.md` memory file.
+- The Aptitude + IELTS tab runs diagnostics and adaptive MCQ practice across Quant, Verbal, Logical Reasoning, Reading Comprehension, and IELTS. It scores tests, identifies weak topics, updates a 7-day plan, can ask AI for new MCQs, and exports a portable `soul.md` memory file.
 - The Weekly Plan tab follows the May 8-August 31 schedule, detects the current week in real time, and rolls unsolved previous-week problems into the current carryover queue.
 - The FAANG Review tab prioritizes due/flagged revisions and high-frequency patterns before random hard problems.
 - Tailwind is compiled during `npm run build`; the app no longer depends on the Tailwind browser CDN.
