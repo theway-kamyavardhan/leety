@@ -1,6 +1,6 @@
 # DSA Grind Tracker
 
-A static, local-first single-page app for tracking LeetCode/DSA progress, spaced revision, weekly contests, hackathons, LeetCode stats, job applications, referrals, mock interviews, and weekly execution planning.
+A static, local-first single-page app for tracking LeetCode/DSA progress, Striver/NeetCode sheets, spaced revision, weekly contests, hackathons, LeetCode stats, job applications, referrals, mock interviews, and weekly execution planning.
 
 ## Run Locally
 
@@ -48,3 +48,4 @@ The AI Coach uses `/api/ai-coach`, a Vercel serverless function, so your OpenRou
 - Hackathon discovery includes realistic mock data and attempts Devpost RSS through a CORS helper. A production version should use a backend proxy for Devpost, Devfolio, and Unstop.
 - The Planner tab turns the full prep strategy into a weekly checklist, monthly review, referral tracker, mock interview log, and health load check.
 - The AI Coach tab calls OpenRouter through `/api/ai-coach` when `OPENROUTER_API_KEY` is configured. A local browser key is still available as an optional dev fallback, but production should use the Vercel environment variable.
+- The Sheets tab includes a built-in high-priority starter integration for NeetCode 150 and Striver SDE Sheet, with links back to the official/canonical sheet pages for the full lists.

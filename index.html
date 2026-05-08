@@ -84,6 +84,7 @@
       <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="jobs"><i class="fa-solid fa-briefcase mr-2"></i>Job Applications</button>
       <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="planner"><i class="fa-solid fa-calendar-check mr-2"></i>Planner</button>
       <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="ai"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i>AI Coach</button>
+      <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="sheets"><i class="fa-solid fa-layer-group mr-2"></i>Sheets</button>
     </nav>
 
     <main class="mt-5">
@@ -386,6 +387,54 @@
           </div>
         </div>
       </section>
+
+      <section id="sheets" class="tab-panel">
+        <div class="grid gap-4 xl:grid-cols-[360px_1fr]">
+          <div class="space-y-4">
+            <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Sheet Progress</h2>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Track curated NeetCode 150 and Striver SDE practice. Mark done here or add problems into your main tracker.</p>
+              <div id="sheetSummary" class="mt-4 grid gap-3"></div>
+            </div>
+            <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Filters</h2>
+              <div class="mt-4 grid gap-3">
+                <select id="sheetFilter" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink">
+                  <option value="All">All sheets</option>
+                  <option value="NeetCode 150">NeetCode 150</option>
+                  <option value="Striver SDE Sheet">Striver SDE Sheet</option>
+                </select>
+                <select id="sheetTopicFilter" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"></select>
+                <select id="sheetStatusFilter" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink">
+                  <option value="All">All statuses</option>
+                  <option value="Done">Done</option>
+                  <option value="Pending">Pending</option>
+                </select>
+              </div>
+              <p class="mt-4 text-xs text-slate-500 dark:text-slate-400">Sources: official NeetCode 150 roadmap and Striver/TakeUForward SDE sheet references. Use links to open the original sheet pages for the complete canonical lists.</p>
+            </div>
+          </div>
+          <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h2 class="text-xl font-bold">Practice Sheet Problems</h2>
+                <p class="text-sm text-slate-600 dark:text-slate-400">Starter integration with high-priority problems from both sheets. Add any row into Problems when solved.</p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <a class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold dark:border-line" href="https://neetcode.io/practice/practice/neetcode150" target="_blank" rel="noreferrer">NeetCode <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i></a>
+                <a class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold dark:border-line" href="https://takeuforward.org/interviews/strivers-sde-sheet-top-coding-interview-problems/" target="_blank" rel="noreferrer">Striver <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i></a>
+              </div>
+            </div>
+            <div class="mt-4 overflow-x-auto">
+              <table class="w-full min-w-[920px] text-left text-sm">
+                <thead class="text-slate-500 dark:text-slate-400"><tr><th class="py-2">Done</th><th>Sheet</th><th>Problem</th><th>Difficulty</th><th>Topic</th><th>Actions</th></tr></thead>
+                <tbody id="sheetTable"></tbody>
+              </table>
+            </div>
+            <p id="sheetEmpty" class="hidden py-8 text-center text-slate-500">No sheet problems match these filters.</p>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -393,6 +442,44 @@
     const STORAGE_KEY = 'dsaProgressState';
     const JOB_KEY = 'jobApplications';
     const topics = ['Arrays', 'Strings', 'Hashing', 'Two Pointers', 'Sliding Window', 'Trees', 'Graphs', 'DP', 'Heaps', 'Binary Search', 'Other'];
+    const sheetProblems = [
+      { id: 'nc-contains-duplicate', sheet: 'NeetCode 150', name: 'Contains Duplicate', number: 217, difficulty: 'Easy', topic: 'Hashing', url: 'https://leetcode.com/problems/contains-duplicate/' },
+      { id: 'nc-valid-anagram', sheet: 'NeetCode 150', name: 'Valid Anagram', number: 242, difficulty: 'Easy', topic: 'Strings', url: 'https://leetcode.com/problems/valid-anagram/' },
+      { id: 'nc-two-sum', sheet: 'NeetCode 150', name: 'Two Sum', number: 1, difficulty: 'Easy', topic: 'Arrays', url: 'https://leetcode.com/problems/two-sum/' },
+      { id: 'nc-group-anagrams', sheet: 'NeetCode 150', name: 'Group Anagrams', number: 49, difficulty: 'Medium', topic: 'Hashing', url: 'https://leetcode.com/problems/group-anagrams/' },
+      { id: 'nc-top-k-frequent', sheet: 'NeetCode 150', name: 'Top K Frequent Elements', number: 347, difficulty: 'Medium', topic: 'Heaps', url: 'https://leetcode.com/problems/top-k-frequent-elements/' },
+      { id: 'nc-product-array', sheet: 'NeetCode 150', name: 'Product of Array Except Self', number: 238, difficulty: 'Medium', topic: 'Arrays', url: 'https://leetcode.com/problems/product-of-array-except-self/' },
+      { id: 'nc-valid-palindrome', sheet: 'NeetCode 150', name: 'Valid Palindrome', number: 125, difficulty: 'Easy', topic: 'Two Pointers', url: 'https://leetcode.com/problems/valid-palindrome/' },
+      { id: 'nc-three-sum', sheet: 'NeetCode 150', name: '3Sum', number: 15, difficulty: 'Medium', topic: 'Two Pointers', url: 'https://leetcode.com/problems/3sum/' },
+      { id: 'nc-container-water', sheet: 'NeetCode 150', name: 'Container With Most Water', number: 11, difficulty: 'Medium', topic: 'Two Pointers', url: 'https://leetcode.com/problems/container-with-most-water/' },
+      { id: 'nc-longest-substring', sheet: 'NeetCode 150', name: 'Longest Substring Without Repeating Characters', number: 3, difficulty: 'Medium', topic: 'Sliding Window', url: 'https://leetcode.com/problems/longest-substring-without-repeating-characters/' },
+      { id: 'nc-valid-parentheses', sheet: 'NeetCode 150', name: 'Valid Parentheses', number: 20, difficulty: 'Easy', topic: 'Other', url: 'https://leetcode.com/problems/valid-parentheses/' },
+      { id: 'nc-binary-search', sheet: 'NeetCode 150', name: 'Binary Search', number: 704, difficulty: 'Easy', topic: 'Binary Search', url: 'https://leetcode.com/problems/binary-search/' },
+      { id: 'nc-invert-tree', sheet: 'NeetCode 150', name: 'Invert Binary Tree', number: 226, difficulty: 'Easy', topic: 'Trees', url: 'https://leetcode.com/problems/invert-binary-tree/' },
+      { id: 'nc-max-depth', sheet: 'NeetCode 150', name: 'Maximum Depth of Binary Tree', number: 104, difficulty: 'Easy', topic: 'Trees', url: 'https://leetcode.com/problems/maximum-depth-of-binary-tree/' },
+      { id: 'nc-clone-graph', sheet: 'NeetCode 150', name: 'Clone Graph', number: 133, difficulty: 'Medium', topic: 'Graphs', url: 'https://leetcode.com/problems/clone-graph/' },
+      { id: 'nc-course-schedule', sheet: 'NeetCode 150', name: 'Course Schedule', number: 207, difficulty: 'Medium', topic: 'Graphs', url: 'https://leetcode.com/problems/course-schedule/' },
+      { id: 'nc-climbing-stairs', sheet: 'NeetCode 150', name: 'Climbing Stairs', number: 70, difficulty: 'Easy', topic: 'DP', url: 'https://leetcode.com/problems/climbing-stairs/' },
+      { id: 'nc-coin-change', sheet: 'NeetCode 150', name: 'Coin Change', number: 322, difficulty: 'Medium', topic: 'DP', url: 'https://leetcode.com/problems/coin-change/' },
+      { id: 'str-set-matrix-zeroes', sheet: 'Striver SDE Sheet', name: 'Set Matrix Zeroes', number: 73, difficulty: 'Medium', topic: 'Arrays', url: 'https://leetcode.com/problems/set-matrix-zeroes/' },
+      { id: 'str-pascals-triangle', sheet: 'Striver SDE Sheet', name: "Pascal's Triangle", number: 118, difficulty: 'Easy', topic: 'Arrays', url: 'https://leetcode.com/problems/pascals-triangle/' },
+      { id: 'str-next-permutation', sheet: 'Striver SDE Sheet', name: 'Next Permutation', number: 31, difficulty: 'Medium', topic: 'Arrays', url: 'https://leetcode.com/problems/next-permutation/' },
+      { id: 'str-kadanes', sheet: 'Striver SDE Sheet', name: 'Maximum Subarray', number: 53, difficulty: 'Medium', topic: 'Arrays', url: 'https://leetcode.com/problems/maximum-subarray/' },
+      { id: 'str-sort-colors', sheet: 'Striver SDE Sheet', name: 'Sort Colors', number: 75, difficulty: 'Medium', topic: 'Two Pointers', url: 'https://leetcode.com/problems/sort-colors/' },
+      { id: 'str-merge-intervals', sheet: 'Striver SDE Sheet', name: 'Merge Intervals', number: 56, difficulty: 'Medium', topic: 'Other', url: 'https://leetcode.com/problems/merge-intervals/' },
+      { id: 'str-merge-sorted-array', sheet: 'Striver SDE Sheet', name: 'Merge Sorted Array', number: 88, difficulty: 'Easy', topic: 'Two Pointers', url: 'https://leetcode.com/problems/merge-sorted-array/' },
+      { id: 'str-repeat-missing', sheet: 'Striver SDE Sheet', name: 'Find the Duplicate Number', number: 287, difficulty: 'Medium', topic: 'Arrays', url: 'https://leetcode.com/problems/find-the-duplicate-number/' },
+      { id: 'str-search-2d', sheet: 'Striver SDE Sheet', name: 'Search a 2D Matrix', number: 74, difficulty: 'Medium', topic: 'Binary Search', url: 'https://leetcode.com/problems/search-a-2d-matrix/' },
+      { id: 'str-pow', sheet: 'Striver SDE Sheet', name: 'Pow(x, n)', number: 50, difficulty: 'Medium', topic: 'Other', url: 'https://leetcode.com/problems/powx-n/' },
+      { id: 'str-majority', sheet: 'Striver SDE Sheet', name: 'Majority Element', number: 169, difficulty: 'Easy', topic: 'Arrays', url: 'https://leetcode.com/problems/majority-element/' },
+      { id: 'str-reverse-linked-list', sheet: 'Striver SDE Sheet', name: 'Reverse Linked List', number: 206, difficulty: 'Easy', topic: 'Other', url: 'https://leetcode.com/problems/reverse-linked-list/' },
+      { id: 'str-linked-cycle', sheet: 'Striver SDE Sheet', name: 'Linked List Cycle', number: 141, difficulty: 'Easy', topic: 'Two Pointers', url: 'https://leetcode.com/problems/linked-list-cycle/' },
+      { id: 'str-lru-cache', sheet: 'Striver SDE Sheet', name: 'LRU Cache', number: 146, difficulty: 'Medium', topic: 'Hashing', url: 'https://leetcode.com/problems/lru-cache/' },
+      { id: 'str-valid-parentheses', sheet: 'Striver SDE Sheet', name: 'Valid Parentheses', number: 20, difficulty: 'Easy', topic: 'Other', url: 'https://leetcode.com/problems/valid-parentheses/' },
+      { id: 'str-kth-largest', sheet: 'Striver SDE Sheet', name: 'Kth Largest Element in an Array', number: 215, difficulty: 'Medium', topic: 'Heaps', url: 'https://leetcode.com/problems/kth-largest-element-in-an-array/' },
+      { id: 'str-serialize-tree', sheet: 'Striver SDE Sheet', name: 'Serialize and Deserialize Binary Tree', number: 297, difficulty: 'Hard', topic: 'Trees', url: 'https://leetcode.com/problems/serialize-and-deserialize-binary-tree/' },
+      { id: 'str-word-ladder', sheet: 'Striver SDE Sheet', name: 'Word Ladder', number: 127, difficulty: 'Hard', topic: 'Graphs', url: 'https://leetcode.com/problems/word-ladder/' }
+    ];
     const today = () => new Date().toISOString().slice(0, 10);
     const uid = () => crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
     const byId = (id) => document.getElementById(id);
@@ -412,6 +499,7 @@
           mocks: [],
           health: []
         },
+        sheetProgress: {},
         settings: { goal: 300, theme: 'dark', leetcodeUsername: '', openrouterModel: 'openrouter/auto' },
         leetcodeStats: null,
         hackathons: generateMockHackathons()
@@ -426,7 +514,8 @@
           ...defaults,
           ...(saved || {}),
           settings: { ...defaults.settings, ...(saved?.settings || {}) },
-          planner: { ...defaults.planner, ...(saved?.planner || {}) }
+          planner: { ...defaults.planner, ...(saved?.planner || {}) },
+          sheetProgress: { ...defaults.sheetProgress, ...(saved?.sheetProgress || {}) }
         };
       } catch { return defaultState(); }
     }
@@ -442,6 +531,7 @@
 
     function init() {
       byId('problemTopic').innerHTML = topics.map(t => `<option>${t}</option>`).join('');
+      byId('sheetTopicFilter').innerHTML = '<option value="All">All topics</option>' + topics.map(t => `<option>${t}</option>`).join('');
       byId('problemDate').value = today();
       byId('contestDate').value = today();
       byId('jobDate').value = today();
@@ -481,6 +571,9 @@
       byId('saveOpenrouterBtn').addEventListener('click', saveOpenrouterSettings);
       byId('clearOpenrouterBtn').addEventListener('click', clearOpenrouterSettings);
       byId('runAiBtn').addEventListener('click', runAiCoach);
+      byId('sheetFilter').addEventListener('change', renderSheets);
+      byId('sheetTopicFilter').addEventListener('change', renderSheets);
+      byId('sheetStatusFilter').addEventListener('change', renderSheets);
       byId('exportAllBtn').addEventListener('click', exportAll);
       byId('importAllInput').addEventListener('change', importAll);
       byId('resetAllBtn').addEventListener('click', resetAll);
@@ -515,6 +608,7 @@
       renderLeetcode();
       renderJobs();
       renderPlanner();
+      renderSheets();
     }
 
     function renderDashboard() {
@@ -535,12 +629,13 @@
       byId('daysText').textContent = `${daysLeft} day${daysLeft === 1 ? '' : 's'} remaining until Aug 31, 2026`;
       const followUps = getFollowUpJobs();
       const health = getHealthSignal();
+      const sheetDone = Object.values(state.sheetProgress || {}).filter(Boolean).length;
       byId('jobCountDash').textContent = jobs.length;
       byId('jobFollowDash').textContent = `${followUps.length} follow-up${followUps.length === 1 ? '' : 's'} due`;
       byId('referralDash').textContent = state.planner.referrals.length;
       byId('mockDash').textContent = state.planner.mocks.length;
       byId('healthDash').textContent = health.label;
-      byId('healthDetailDash').textContent = health.detail;
+      byId('healthDetailDash').textContent = `${health.detail} Sheets: ${sheetDone}/${sheetProblems.length}`;
       renderCharts({ diff, topic });
     }
 
@@ -885,6 +980,85 @@
         </tr>`).join('');
       byId('jobEmpty').classList.toggle('hidden', rows.length > 0);
     }
+
+    function renderSheets() {
+      const sheetFilter = byId('sheetFilter')?.value || 'All';
+      const topicFilter = byId('sheetTopicFilter')?.value || 'All';
+      const statusFilter = byId('sheetStatusFilter')?.value || 'All';
+      const rows = sheetProblems.filter(p => {
+        const done = Boolean(state.sheetProgress[p.id]);
+        return (sheetFilter === 'All' || p.sheet === sheetFilter)
+          && (topicFilter === 'All' || p.topic === topicFilter)
+          && (statusFilter === 'All' || (statusFilter === 'Done' ? done : !done));
+      });
+      byId('sheetTable').innerHTML = rows.map(p => `
+        <tr class="border-t border-slate-200 dark:border-line">
+          <td class="py-3"><input type="checkbox" ${state.sheetProgress[p.id] ? 'checked' : ''} onchange="toggleSheetProblem('${p.id}', this.checked)" /></td>
+          <td>${escapeHtml(p.sheet)}</td>
+          <td class="font-semibold"><a class="text-brand" href="${escapeAttr(p.url)}" target="_blank" rel="noreferrer">#${p.number} ${escapeHtml(p.name)}</a></td>
+          <td>${badge(p.difficulty)}</td>
+          <td>${escapeHtml(p.topic)}</td>
+          <td class="space-x-2">
+            <button class="text-brand" onclick="addSheetToProblem('${p.id}')" title="Add to Problems"><i class="fa-solid fa-plus"></i></button>
+            <a class="text-slate-500 dark:text-slate-400" href="${escapeAttr(p.url)}" target="_blank" rel="noreferrer" title="Open problem"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+          </td>
+        </tr>`).join('');
+      byId('sheetEmpty').classList.toggle('hidden', rows.length > 0);
+      renderSheetSummary();
+    }
+
+    function renderSheetSummary() {
+      const names = ['NeetCode 150', 'Striver SDE Sheet'];
+      byId('sheetSummary').innerHTML = names.map(name => {
+        const list = sheetProblems.filter(p => p.sheet === name);
+        const done = list.filter(p => state.sheetProgress[p.id]).length;
+        const pct = list.length ? Math.round((done / list.length) * 100) : 0;
+        return `
+          <div class="rounded-lg border border-slate-300 p-3 dark:border-line">
+            <div class="flex items-center justify-between gap-3"><p class="font-semibold">${name}</p><p class="text-sm text-slate-500">${done}/${list.length}</p></div>
+            <div class="mt-2 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"><div class="h-full bg-brand" style="width:${pct}%"></div></div>
+            <p class="mt-1 text-xs text-slate-500">${pct}% complete in built-in starter set</p>
+          </div>`;
+      }).join('');
+    }
+
+    window.toggleSheetProblem = (id, done) => {
+      state.sheetProgress[id] = done;
+      const p = sheetProblems.find(x => x.id === id);
+      if (done && p && !state.problems.some(item => item.number === p.number)) {
+        state.problems.push({
+          id: uid(),
+          name: p.name,
+          number: p.number,
+          difficulty: p.difficulty,
+          topic: p.topic,
+          dateSolved: today(),
+          timeTaken: null,
+          notes: `Marked done from ${p.sheet}.`,
+          flag: 1,
+          lastRevised: null
+        });
+      }
+      save();
+      notify(done ? 'Sheet problem marked done.' : 'Sheet problem marked pending.');
+      renderAll();
+    };
+
+    window.addSheetToProblem = (id) => {
+      const p = sheetProblems.find(x => x.id === id);
+      if (!p) return;
+      byId('problemId').value = '';
+      byId('problemName').value = p.name;
+      byId('problemNumber').value = p.number;
+      byId('problemDifficulty').value = p.difficulty;
+      byId('problemTopic').value = p.topic;
+      byId('problemDate').value = today();
+      byId('problemTime').value = '';
+      byId('problemFlag').value = '1';
+      byId('problemNotes').value = `From ${p.sheet}: ${p.url}`;
+      openTab('problems');
+      notify('Problem copied into the entry form.');
+    };
 
     window.editJob = (id) => {
       const j = jobs.find(x => x.id === id);
@@ -1232,7 +1406,8 @@
             ...defaults,
             ...data,
             settings: { ...defaults.settings, ...(data.settings || {}) },
-            planner: { ...defaults.planner, ...(data.planner || {}) }
+            planner: { ...defaults.planner, ...(data.planner || {}) },
+            sheetProgress: { ...defaults.sheetProgress, ...(data.sheetProgress || {}) }
           };
           jobs = data.jobApplications || data.jobs || [];
           save();
