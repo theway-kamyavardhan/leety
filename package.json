@@ -1,0 +1,20 @@
+{
+  "name": "dsa-grind-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static local-first DSA, LeetCode, contest, hackathon, and job application tracker.",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "check": "node -c server.js"
+  },
+  "keywords": [
+    "dsa",
+    "leetcode",
+    "tracker",
+    "static",
+    "vercel"
+  ],
+  "license": "MIT"
+}

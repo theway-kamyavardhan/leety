@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DSA Grind Tracker</title>
+  <meta name="description" content="A local-first DSA, LeetCode, contest, hackathon, and job application tracker." />
+  <meta name="theme-color" content="#0e1117" />
+  <meta property="og:title" content="DSA Grind Tracker" />
+  <meta property="og:description" content="Track LeetCode progress, revisions, contests, hackathons, and job applications in one premium static app." />
+  <meta property="og:type" content="website" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            ink: '#0e1117',
+            panel: '#161b22',
+            line: '#30363d',
+            brand: '#2f81f7',
+            mint: '#2ea043',
+            warn: '#d29922',
+            danger: '#f85149'
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root { color-scheme: dark; }
+    .light { color-scheme: light; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .tab-btn.active { background: #2f81f7; color: #fff; border-color: #2f81f7; }
+    .light .tab-btn.active { background: #1d4ed8; border-color: #1d4ed8; }
+    input, select, textarea { outline: none; }
+    button, a, input, select, textarea { transition: background-color .18s ease, border-color .18s ease, color .18s ease, opacity .18s ease, transform .18s ease, box-shadow .18s ease; }
+    button:hover, a.rounded-md:hover { transform: translateY(-1px); }
+    input:focus, select:focus, textarea:focus { border-color: #2f81f7; box-shadow: 0 0 0 3px rgba(47, 129, 247, .18); }
+    .premium-card { box-shadow: 0 16px 40px rgba(2, 6, 23, .08); }
+    .dark .premium-card { box-shadow: 0 16px 40px rgba(0, 0, 0, .22); }
+    .toast { animation: toast-in .22s ease both; }
+    @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb { background: #64748b; border-radius: 999px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    canvas { max-height: 320px; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900 dark:bg-ink dark:text-slate-100">
+  <div class="pointer-events-none fixed right-4 top-4 z-50 grid w-[min(360px,calc(100vw-2rem))] gap-2" id="toastHost" aria-live="polite" aria-atomic="true"></div>
+  <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+    <header class="flex flex-col gap-4 border-b border-slate-300 pb-5 dark:border-line lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <p class="text-sm font-semibold uppercase tracking-wide text-brand">LeetCode grind command center</p>
+        <h1 class="mt-1 text-3xl font-bold sm:text-4xl">DSA Progress Tracker</h1>
+        <p class="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-400">Track solved problems, revision due dates, contests, hackathons, LeetCode stats, and job applications from one local-first dashboard.</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button id="themeToggle" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-200 dark:border-line dark:hover:bg-panel">
+          <i class="fa-solid fa-moon mr-2"></i><span>Dark</span>
+        </button>
+        <button id="exportAllBtn" class="rounded-md bg-mint px-3 py-2 text-sm font-semibold text-white hover:opacity-90"><i class="fa-solid fa-download mr-2"></i>Export All Data</button>
+        <label class="cursor-pointer rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white hover:opacity-90">
+          <i class="fa-solid fa-upload mr-2"></i>Import All Data
+          <input id="importAllInput" type="file" accept="application/json" class="hidden" />
+        </label>
+        <button id="resetAllBtn" class="rounded-md bg-danger px-3 py-2 text-sm font-semibold text-white hover:opacity-90"><i class="fa-solid fa-trash mr-2"></i>Reset</button>
+      </div>
+    </header>
+
+    <nav class="mt-5 flex gap-2 overflow-x-auto pb-2">
+      <button class="tab-btn active shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="dashboard"><i class="fa-solid fa-chart-line mr-2"></i>Dashboard</button>
+      <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="problems"><i class="fa-solid fa-list-check mr-2"></i>Problems</button>
+      <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="revisions"><i class="fa-solid fa-rotate-right mr-2"></i>Revisions</button>
+      <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="contests"><i class="fa-solid fa-trophy mr-2"></i>Contests</button>
+      <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="hackathons"><i class="fa-solid fa-lightbulb mr-2"></i>Hackathons</button>
+      <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="leetcode"><i class="fa-solid fa-code mr-2"></i>LeetCode Stats</button>
+      <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="jobs"><i class="fa-solid fa-briefcase mr-2"></i>Job Applications</button>
+      <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="planner"><i class="fa-solid fa-calendar-check mr-2"></i>Planner</button>
+      <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="ai"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i>AI Coach</button>
+    </nav>
+
+    <main class="mt-5">
+      <section id="dashboard" class="tab-panel active">
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <p class="text-sm text-slate-500 dark:text-slate-400">Total solved</p>
+            <p id="totalSolved" class="mt-2 text-4xl font-bold">0</p>
+          </div>
+          <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <p class="text-sm text-slate-500 dark:text-slate-400">Difficulty split</p>
+            <p id="difficultyText" class="mt-3 text-lg font-semibold">Easy 0 / Medium 0 / Hard 0</p>
+          </div>
+          <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <label class="text-sm text-slate-500 dark:text-slate-400" for="goalInput">Goal by Aug 31, 2026</label>
+            <div class="mt-2 flex gap-2">
+              <input id="goalInput" type="number" min="1" class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+              <button id="goal400Btn" class="rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white">400</button>
+            </div>
+            <div class="mt-3 h-3 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"><div id="goalBar" class="h-full bg-mint" style="width:0%"></div></div>
+            <p id="goalText" class="mt-2 text-sm text-slate-600 dark:text-slate-400">0% complete</p>
+          </div>
+          <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <p class="text-sm text-slate-500 dark:text-slate-400">Needed pace</p>
+            <p id="paceText" class="mt-2 text-3xl font-bold">0/day</p>
+            <p id="daysText" class="mt-1 text-sm text-slate-600 dark:text-slate-400">Deadline: Aug 31, 2026</p>
+          </div>
+        </div>
+        <div class="mt-4 grid gap-4 lg:grid-cols-2">
+          <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel"><h2 class="mb-3 text-lg font-bold">Difficulty Breakdown</h2><canvas id="difficultyChart"></canvas></div>
+          <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel"><h2 class="mb-3 text-lg font-bold">Topic Breakdown</h2><canvas id="topicChart"></canvas></div>
+        </div>
+        <div class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <p class="text-sm text-slate-500 dark:text-slate-400">Job applications</p>
+            <p id="jobCountDash" class="mt-2 text-3xl font-bold">0</p>
+            <p id="jobFollowDash" class="mt-1 text-sm text-slate-600 dark:text-slate-400">0 follow-ups due</p>
+          </div>
+          <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <p class="text-sm text-slate-500 dark:text-slate-400">Network outreach</p>
+            <p id="referralDash" class="mt-2 text-3xl font-bold">0</p>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Goal: 5 messages/weekend</p>
+          </div>
+          <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <p class="text-sm text-slate-500 dark:text-slate-400">Mock interviews</p>
+            <p id="mockDash" class="mt-2 text-3xl font-bold">0</p>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Start weekly from August</p>
+          </div>
+          <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <p class="text-sm text-slate-500 dark:text-slate-400">Sustainability</p>
+            <p id="healthDash" class="mt-2 text-3xl font-bold">Good</p>
+            <p id="healthDetailDash" class="mt-1 text-sm text-slate-600 dark:text-slate-400">Log sleep and prep hours in Planner</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="problems" class="tab-panel">
+        <div class="grid gap-4 lg:grid-cols-[360px_1fr]">
+          <form id="problemForm" class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <h2 class="text-xl font-bold">Problem Entry</h2>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Add solved questions and notes. Editing an entry fills this form.</p>
+            <input type="hidden" id="problemId" />
+            <div class="mt-4 grid gap-3">
+              <input id="problemName" required placeholder="Problem name" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+              <input id="problemNumber" required type="number" min="1" placeholder="LeetCode number" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+              <div class="grid grid-cols-2 gap-3">
+                <select id="problemDifficulty" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"><option>Easy</option><option>Medium</option><option>Hard</option></select>
+                <select id="problemTopic" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"></select>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <input id="problemDate" type="date" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                <input id="problemTime" type="number" min="0" placeholder="Minutes" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+              </div>
+              <select id="problemFlag" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"><option value="1">1 - Easy</option><option value="2">2 - Struggled</option><option value="3">3 - Could not solve</option></select>
+              <textarea id="problemNotes" rows="4" placeholder="Notes" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"></textarea>
+              <div class="flex gap-2">
+                <button class="flex-1 rounded-md bg-brand px-3 py-2 font-semibold text-white" type="submit"><i class="fa-solid fa-floppy-disk mr-2"></i>Save Problem</button>
+                <button id="problemCancelBtn" class="rounded-md border border-slate-300 px-3 py-2 font-semibold dark:border-line" type="button">Clear</button>
+              </div>
+            </div>
+          </form>
+          <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div><h2 class="text-xl font-bold">Solved Problems</h2><p class="text-sm text-slate-600 dark:text-slate-400">Your full problem log with edit and delete controls.</p></div>
+              <input id="problemSearch" placeholder="Search problems..." class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+            </div>
+            <div class="mt-4 overflow-x-auto"><table class="w-full min-w-[860px] text-left text-sm"><thead class="text-slate-500 dark:text-slate-400"><tr><th class="py-2">#</th><th>Name</th><th>Difficulty</th><th>Topic</th><th>Date</th><th>Time</th><th>Flag</th><th>Actions</th></tr></thead><tbody id="problemTable"></tbody></table></div>
+            <p id="problemEmpty" class="hidden py-8 text-center text-slate-500">No problems yet. Add your first solved question.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="revisions" class="tab-panel">
+        <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+          <h2 class="text-xl font-bold">Due for Revision Today</h2>
+          <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Flag 2 or 3 problems come back after 1 day. Flag 1 problems return after 7 days, then every 30 days after a revision.</p>
+          <div id="revisionList" class="mt-4 grid gap-3"></div>
+          <p id="revisionEmpty" class="hidden py-8 text-center text-slate-500">Nothing due today. Enjoy the quiet while it lasts.</p>
+        </div>
+      </section>
+
+      <section id="contests" class="tab-panel">
+        <div class="grid gap-4 lg:grid-cols-[340px_1fr]">
+          <form id="contestForm" class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <h2 class="text-xl font-bold">Contest Result</h2>
+            <input type="hidden" id="contestId" />
+            <div class="mt-4 grid gap-3">
+              <input id="contestDate" type="date" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+              <input id="contestSolved" type="number" min="0" max="4" placeholder="Problems solved out of 4" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+              <input id="contestRank" type="number" min="1" placeholder="Rank (optional)" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+              <button class="rounded-md bg-brand px-3 py-2 font-semibold text-white" type="submit"><i class="fa-solid fa-plus mr-2"></i>Save Contest</button>
+            </div>
+          </form>
+          <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <h2 class="text-xl font-bold">Performance Trend</h2>
+            <canvas id="contestChart" class="mt-3"></canvas>
+            <div class="mt-4 overflow-x-auto"><table class="w-full min-w-[560px] text-left text-sm"><thead class="text-slate-500 dark:text-slate-400"><tr><th class="py-2">Date</th><th>Solved</th><th>Rank</th><th>Actions</th></tr></thead><tbody id="contestTable"></tbody></table></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="hackathons" class="tab-panel">
+        <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div><h2 class="text-xl font-bold">Hackathon Discovery</h2><p class="text-sm text-slate-600 dark:text-slate-400">Mock data is included for reliable demos. Refresh attempts public feeds through a CORS helper; production deployments should use a backend proxy.</p></div>
+            <button id="refreshHackathonsBtn" class="rounded-md bg-brand px-3 py-2 font-semibold text-white"><i class="fa-solid fa-arrows-rotate mr-2"></i>Refresh</button>
+          </div>
+          <p id="hackathonStatus" class="mt-3 text-sm text-slate-600 dark:text-slate-400"></p>
+          <div id="hackathonGrid" class="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3"></div>
+        </div>
+      </section>
+
+      <section id="leetcode" class="tab-panel">
+        <div class="grid gap-4 lg:grid-cols-[360px_1fr]">
+          <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <h2 class="text-xl font-bold">LeetCode Profile</h2>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Uses leetcode-stats-api.herokuapp.com. If it fails, the app keeps working and shows a clear note.</p>
+            <div class="mt-4 flex gap-2">
+              <input id="leetcodeUsername" placeholder="Username" class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+              <button id="fetchLeetcodeBtn" class="rounded-md bg-brand px-3 py-2 font-semibold text-white">Fetch</button>
+            </div>
+            <p id="leetcodeNote" class="mt-3 text-sm text-slate-600 dark:text-slate-400"></p>
+          </div>
+          <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <div id="leetcodeStats" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"></div>
+            <canvas id="leetcodeChart" class="mt-4"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section id="jobs" class="tab-panel">
+        <div class="grid gap-4 xl:grid-cols-[420px_1fr]">
+          <div class="space-y-4">
+            <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Parse Job Summary</h2>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Paste a posting to extract title, company, location, skills, deadline, and salary using local regex heuristics.</p>
+              <textarea id="jobSummary" rows="8" placeholder="Paste job description or posting summary..." class="mt-4 w-full rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"></textarea>
+              <button id="parseJobBtn" class="mt-3 rounded-md bg-brand px-3 py-2 font-semibold text-white"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Parse Summary</button>
+              <p id="parseMessage" class="mt-3 text-sm text-slate-600 dark:text-slate-400"></p>
+            </div>
+            <form id="jobForm" class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Manual Job Entry</h2>
+              <input type="hidden" id="jobId" />
+              <div class="mt-4 grid gap-3">
+                <input id="jobTitle" required placeholder="Job title" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                <input id="jobCompany" required placeholder="Company name" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                <input id="jobLocation" placeholder="Location" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                <div class="grid grid-cols-2 gap-3">
+                  <input id="jobDate" type="date" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                  <select id="jobStatus" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"><option>Applied</option><option>Interviewing</option><option>Offer Received</option><option>Rejected</option><option>Wishlist</option></select>
+                </div>
+                <input id="jobLink" type="url" placeholder="Job posting URL" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                <input id="jobSkills" placeholder="Skills, comma separated" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                <input id="jobDeadline" placeholder="Deadline (optional)" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                <input id="jobSalary" placeholder="Salary range (optional)" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                <textarea id="jobNotes" rows="4" placeholder="Notes" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"></textarea>
+                <div class="flex gap-2">
+                  <button class="flex-1 rounded-md bg-brand px-3 py-2 font-semibold text-white" type="submit"><i class="fa-solid fa-floppy-disk mr-2"></i>Save Job</button>
+                  <button id="jobClearBtn" class="rounded-md border border-slate-300 px-3 py-2 font-semibold dark:border-line" type="button">Clear</button>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <div><h2 class="text-xl font-bold">Applications</h2><p class="text-sm text-slate-600 dark:text-slate-400">Filter by status, sorted newest first.</p></div>
+              <div class="flex flex-wrap gap-2">
+                <select id="jobStatusFilter" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"><option value="All">All statuses</option><option>Applied</option><option>Interviewing</option><option>Offer Received</option><option>Rejected</option><option>Wishlist</option></select>
+                <button id="exportJobsBtn" class="rounded-md bg-mint px-3 py-2 font-semibold text-white"><i class="fa-solid fa-download mr-2"></i>Export Jobs</button>
+              </div>
+            </div>
+            <div class="mt-4 overflow-x-auto"><table class="w-full min-w-[900px] text-left text-sm"><thead class="text-slate-500 dark:text-slate-400"><tr><th class="py-2">Title</th><th>Company</th><th>Location</th><th>Status</th><th>Application Date</th><th>Skills</th><th>Actions</th></tr></thead><tbody id="jobTable"></tbody></table></div>
+            <p id="jobEmpty" class="hidden py-8 text-center text-slate-500">No job applications yet.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="planner" class="tab-panel">
+        <div class="grid gap-4 xl:grid-cols-[420px_1fr]">
+          <div class="space-y-4">
+            <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Sunday Execution Plan</h2>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Use this as the weekly operating system: DSA, applications, projects, mock prep, and review.</p>
+              <div class="mt-4 grid gap-2" id="weeklyChecklist"></div>
+            </div>
+
+            <form id="referralForm" class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Referral / Network Log</h2>
+              <div class="mt-4 grid gap-3">
+                <input id="referralName" required placeholder="Contact name" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                <input id="referralCompany" placeholder="Company / relation" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                <div class="grid grid-cols-2 gap-3">
+                  <input id="referralDate" type="date" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                  <select id="referralStatus" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"><option>To Message</option><option>Messaged</option><option>Followed Up</option><option>Referred</option><option>Closed</option></select>
+                </div>
+                <textarea id="referralNotes" rows="3" placeholder="Notes, referral ask, next follow-up" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"></textarea>
+                <button class="rounded-md bg-brand px-3 py-2 font-semibold text-white" type="submit"><i class="fa-solid fa-paper-plane mr-2"></i>Save Outreach</button>
+              </div>
+            </form>
+
+            <form id="healthForm" class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Health Load Check</h2>
+              <div class="mt-4 grid gap-3">
+                <input id="healthDate" type="date" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                <div class="grid grid-cols-2 gap-3">
+                  <input id="sleepHours" type="number" min="0" step="0.25" placeholder="Sleep hours" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                  <input id="prepHours" type="number" min="0" step="0.25" placeholder="Prep hours" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                </div>
+                <textarea id="healthNotes" rows="3" placeholder="Energy, exercise, caffeine, burnout signals" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"></textarea>
+                <button class="rounded-md bg-mint px-3 py-2 font-semibold text-white" type="submit"><i class="fa-solid fa-heart-pulse mr-2"></i>Save Check-in</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="space-y-4">
+            <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Monthly Review</h2>
+              <div id="monthlyReview" class="mt-4 grid gap-3 md:grid-cols-2"></div>
+            </div>
+
+            <form id="mockForm" class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Mock Interview Log</h2>
+              <div class="mt-4 grid gap-3 md:grid-cols-2">
+                <input id="mockDate" type="date" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                <input id="mockPlatform" placeholder="Platform / interviewer" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                <select id="mockType" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"><option>DSA</option><option>System Design</option><option>Behavioural</option><option>Project Deep Dive</option></select>
+                <input id="mockScore" type="number" min="1" max="10" placeholder="Score /10" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                <textarea id="mockWentWell" rows="3" placeholder="What went well" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink md:col-span-2"></textarea>
+                <textarea id="mockImprove" rows="3" placeholder="What to improve" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink md:col-span-2"></textarea>
+                <button class="rounded-md bg-brand px-3 py-2 font-semibold text-white md:col-span-2" type="submit"><i class="fa-solid fa-microphone-lines mr-2"></i>Save Mock</button>
+              </div>
+            </form>
+
+            <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Logs</h2>
+              <div class="mt-4 grid gap-4">
+                <div><h3 class="font-semibold">Outreach</h3><div id="referralList" class="mt-2 grid gap-2"></div></div>
+                <div><h3 class="font-semibold">Mocks</h3><div id="mockList" class="mt-2 grid gap-2"></div></div>
+                <div><h3 class="font-semibold">Health</h3><div id="healthList" class="mt-2 grid gap-2"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="ai" class="tab-panel">
+        <div class="grid gap-4 xl:grid-cols-[420px_1fr]">
+          <div class="space-y-4">
+            <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">OpenRouter Setup</h2>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">On Vercel, set OPENROUTER_API_KEY and the app will use the built-in /api/ai-coach route. Local key entry is optional for testing only.</p>
+              <div class="mt-4 grid gap-3">
+                <input id="openrouterKey" type="password" placeholder="OpenRouter API key" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" autocomplete="off" />
+                <input id="openrouterModel" placeholder="Model, e.g. openrouter/auto" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                <div class="flex gap-2">
+                  <button id="saveOpenrouterBtn" class="flex-1 rounded-md bg-brand px-3 py-2 font-semibold text-white" type="button"><i class="fa-solid fa-key mr-2"></i>Save Settings</button>
+                  <button id="clearOpenrouterBtn" class="rounded-md border border-slate-300 px-3 py-2 font-semibold dark:border-line" type="button">Clear</button>
+                </div>
+              </div>
+              <p id="openrouterStatus" class="mt-3 text-sm text-slate-600 dark:text-slate-400"></p>
+            </div>
+
+            <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Quick Prompts</h2>
+              <div class="mt-4 grid gap-2">
+                <button class="rounded-md border border-slate-300 px-3 py-2 text-left text-sm font-semibold dark:border-line" type="button" onclick="fillAiPrompt('weekly')"><i class="fa-solid fa-calendar-week mr-2 text-brand"></i>Plan my next 7 days</button>
+                <button class="rounded-md border border-slate-300 px-3 py-2 text-left text-sm font-semibold dark:border-line" type="button" onclick="fillAiPrompt('dsa')"><i class="fa-solid fa-code mr-2 text-brand"></i>Recommend DSA focus topics</button>
+                <button class="rounded-md border border-slate-300 px-3 py-2 text-left text-sm font-semibold dark:border-line" type="button" onclick="fillAiPrompt('jobs')"><i class="fa-solid fa-briefcase mr-2 text-brand"></i>Improve job application strategy</button>
+                <button class="rounded-md border border-slate-300 px-3 py-2 text-left text-sm font-semibold dark:border-line" type="button" onclick="fillAiPrompt('review')"><i class="fa-solid fa-chart-simple mr-2 text-brand"></i>Run monthly review</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <h2 class="text-xl font-bold">AI Execution Coach</h2>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Ask for a plan using your tracker data. On deployment, this uses your Vercel serverless function and environment variable.</p>
+            <textarea id="aiPrompt" rows="8" placeholder="Ask for a weekly plan, DSA topic plan, job strategy, mock interview prep..." class="mt-4 w-full rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"></textarea>
+            <button id="runAiBtn" class="mt-3 rounded-md bg-brand px-3 py-2 font-semibold text-white" type="button"><i class="fa-solid fa-paper-plane mr-2"></i>Ask AI Coach</button>
+            <div id="aiOutput" class="mt-4 min-h-[220px] whitespace-pre-wrap rounded-lg border border-slate-300 bg-slate-50 p-4 text-sm leading-6 text-slate-800 dark:border-line dark:bg-ink dark:text-slate-200">AI responses will appear here.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'dsaProgressState';
+    const JOB_KEY = 'jobApplications';
+    const topics = ['Arrays', 'Strings', 'Hashing', 'Two Pointers', 'Sliding Window', 'Trees', 'Graphs', 'DP', 'Heaps', 'Binary Search', 'Other'];
+    const today = () => new Date().toISOString().slice(0, 10);
+    const uid = () => crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
+    const byId = (id) => document.getElementById(id);
+    const fmt = (date) => date ? new Date(date + 'T00:00:00').toLocaleDateString() : '-';
+    let charts = {};
+    let state = loadState();
+    let jobs = loadJobs();
+
+    function defaultState() {
+      return {
+        problems: [],
+        contests: [],
+        revisionHistory: [],
+        planner: {
+          checklist: {},
+          referrals: [],
+          mocks: [],
+          health: []
+        },
+        settings: { goal: 300, theme: 'dark', leetcodeUsername: '', openrouterModel: 'openrouter/auto' },
+        leetcodeStats: null,
+        hackathons: generateMockHackathons()
+      };
+    }
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        const defaults = defaultState();
+        return {
+          ...defaults,
+          ...(saved || {}),
+          settings: { ...defaults.settings, ...(saved?.settings || {}) },
+          planner: { ...defaults.planner, ...(saved?.planner || {}) }
+        };
+      } catch { return defaultState(); }
+    }
+
+    function loadJobs() {
+      try { return JSON.parse(localStorage.getItem(JOB_KEY)) || []; } catch { return []; }
+    }
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      localStorage.setItem(JOB_KEY, JSON.stringify(jobs));
+    }
+
+    function init() {
+      byId('problemTopic').innerHTML = topics.map(t => `<option>${t}</option>`).join('');
+      byId('problemDate').value = today();
+      byId('contestDate').value = today();
+      byId('jobDate').value = today();
+      byId('referralDate').value = today();
+      byId('mockDate').value = today();
+      byId('healthDate').value = today();
+      byId('goalInput').value = state.settings.goal;
+      byId('leetcodeUsername').value = state.settings.leetcodeUsername || '';
+      byId('openrouterModel').value = state.settings.openrouterModel || 'openrouter/auto';
+      byId('openrouterStatus').textContent = localStorage.getItem('openrouterApiKey') ? 'Local OpenRouter key is saved for this browser.' : 'Vercel mode uses OPENROUTER_API_KEY. Local key is optional.';
+      document.documentElement.classList.toggle('dark', state.settings.theme !== 'light');
+      document.documentElement.classList.toggle('light', state.settings.theme === 'light');
+      updateThemeButton();
+      bindEvents();
+      renderAll();
+    }
+
+    function bindEvents() {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => openTab(btn.dataset.tab)));
+      byId('themeToggle').addEventListener('click', toggleTheme);
+      byId('goalInput').addEventListener('change', e => { state.settings.goal = Number(e.target.value) || 300; save(); renderDashboard(); });
+      byId('goal400Btn').addEventListener('click', () => { state.settings.goal = 400; byId('goalInput').value = 400; save(); renderDashboard(); });
+      byId('problemForm').addEventListener('submit', saveProblem);
+      byId('problemCancelBtn').addEventListener('click', resetProblemForm);
+      byId('problemSearch').addEventListener('input', renderProblems);
+      byId('contestForm').addEventListener('submit', saveContest);
+      byId('refreshHackathonsBtn').addEventListener('click', refreshHackathons);
+      byId('fetchLeetcodeBtn').addEventListener('click', fetchLeetcode);
+      byId('parseJobBtn').addEventListener('click', parseJobSummary);
+      byId('jobForm').addEventListener('submit', saveJob);
+      byId('jobClearBtn').addEventListener('click', resetJobForm);
+      byId('jobStatusFilter').addEventListener('change', renderJobs);
+      byId('exportJobsBtn').addEventListener('click', () => downloadJson('job-applications.json', jobs));
+      byId('referralForm').addEventListener('submit', saveReferral);
+      byId('mockForm').addEventListener('submit', saveMock);
+      byId('healthForm').addEventListener('submit', saveHealth);
+      byId('saveOpenrouterBtn').addEventListener('click', saveOpenrouterSettings);
+      byId('clearOpenrouterBtn').addEventListener('click', clearOpenrouterSettings);
+      byId('runAiBtn').addEventListener('click', runAiCoach);
+      byId('exportAllBtn').addEventListener('click', exportAll);
+      byId('importAllInput').addEventListener('change', importAll);
+      byId('resetAllBtn').addEventListener('click', resetAll);
+    }
+
+    function openTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === tab));
+      setTimeout(renderCharts, 0);
+    }
+
+    function toggleTheme() {
+      state.settings.theme = state.settings.theme === 'light' ? 'dark' : 'light';
+      document.documentElement.classList.toggle('dark', state.settings.theme !== 'light');
+      document.documentElement.classList.toggle('light', state.settings.theme === 'light');
+      save();
+      updateThemeButton();
+      renderCharts();
+    }
+
+    function updateThemeButton() {
+      const isLight = state.settings.theme === 'light';
+      byId('themeToggle').innerHTML = `<i class="fa-solid ${isLight ? 'fa-sun' : 'fa-moon'} mr-2"></i><span>${isLight ? 'Light' : 'Dark'}</span>`;
+    }
+
+    function renderAll() {
+      renderDashboard();
+      renderProblems();
+      renderRevisions();
+      renderContests();
+      renderHackathons();
+      renderLeetcode();
+      renderJobs();
+      renderPlanner();
+    }
+
+    function renderDashboard() {
+      const total = state.problems.length;
+      const diff = countBy(state.problems, 'difficulty');
+      const topic = countBy(state.problems, 'topic');
+      byId('totalSolved').textContent = total;
+      byId('difficultyText').textContent = `Easy ${diff.Easy || 0} / Medium ${diff.Medium || 0} / Hard ${diff.Hard || 0}`;
+      const goal = Number(state.settings.goal) || 300;
+      const pct = Math.min(100, Math.round((total / goal) * 100));
+      byId('goalBar').style.width = `${pct}%`;
+      byId('goalText').textContent = `${pct}% complete (${total}/${goal})`;
+      const deadline = new Date('2026-08-31T00:00:00');
+      const now = new Date();
+      const daysLeft = Math.max(0, Math.ceil((deadline - now) / 86400000));
+      const remaining = Math.max(0, goal - total);
+      byId('paceText').textContent = daysLeft ? `${(remaining / daysLeft).toFixed(2)}/day` : `${remaining} left`;
+      byId('daysText').textContent = `${daysLeft} day${daysLeft === 1 ? '' : 's'} remaining until Aug 31, 2026`;
+      const followUps = getFollowUpJobs();
+      const health = getHealthSignal();
+      byId('jobCountDash').textContent = jobs.length;
+      byId('jobFollowDash').textContent = `${followUps.length} follow-up${followUps.length === 1 ? '' : 's'} due`;
+      byId('referralDash').textContent = state.planner.referrals.length;
+      byId('mockDash').textContent = state.planner.mocks.length;
+      byId('healthDash').textContent = health.label;
+      byId('healthDetailDash').textContent = health.detail;
+      renderCharts({ diff, topic });
+    }
+
+    function renderCharts(precomputed = {}) {
+      const diff = precomputed.diff || countBy(state.problems, 'difficulty');
+      const topic = precomputed.topic || countBy(state.problems, 'topic');
+      drawChart('difficultyChart', 'doughnut', {
+        labels: ['Easy', 'Medium', 'Hard'],
+        datasets: [{ data: [diff.Easy || 0, diff.Medium || 0, diff.Hard || 0], backgroundColor: ['#2ea043', '#d29922', '#f85149'] }]
+      });
+      drawChart('topicChart', 'bar', {
+        labels: topics,
+        datasets: [{ label: 'Solved', data: topics.map(t => topic[t] || 0), backgroundColor: '#2f81f7' }]
+      });
+      const sortedContests = [...state.contests].sort((a, b) => a.date.localeCompare(b.date));
+      drawChart('contestChart', 'line', {
+        labels: sortedContests.map(c => fmt(c.date)),
+        datasets: [{ label: 'Problems solved', data: sortedContests.map(c => c.solved), borderColor: '#2ea043', backgroundColor: 'rgba(46,160,67,.18)', fill: true, tension: .35 }]
+      }, { scales: { y: { min: 0, max: 4, ticks: { stepSize: 1 } } } });
+      const stats = state.leetcodeStats;
+      const activity = stats?.activity || mockActivity();
+      drawChart('leetcodeChart', 'line', {
+        labels: activity.map(a => a.date),
+        datasets: [{ label: 'Recent solves', data: activity.map(a => a.count), borderColor: '#2f81f7', backgroundColor: 'rgba(47,129,247,.18)', fill: true, tension: .35 }]
+      });
+    }
+
+    function drawChart(id, type, data, extra = {}) {
+      const canvas = byId(id);
+      if (!canvas || !canvas.offsetParent) return;
+      if (charts[id]) charts[id].destroy();
+      const grid = state.settings.theme === 'light' ? '#e2e8f0' : '#30363d';
+      const ticks = state.settings.theme === 'light' ? '#475569' : '#cbd5e1';
+      charts[id] = new Chart(canvas, {
+        type,
+        data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: ticks } } },
+          scales: type === 'doughnut' || type === 'pie' ? {} : { x: { ticks: { color: ticks }, grid: { color: grid } }, y: { ticks: { color: ticks }, grid: { color: grid }, beginAtZero: true }, ...(extra.scales || {}) },
+          ...extra
+        }
+      });
+    }
+
+    function countBy(items, key) {
+      return items.reduce((acc, item) => { acc[item[key]] = (acc[item[key]] || 0) + 1; return acc; }, {});
+    }
+
+    function saveProblem(e) {
+      e.preventDefault();
+      const id = byId('problemId').value || uid();
+      const existing = state.problems.find(p => p.id === id);
+      const problem = {
+        id,
+        name: byId('problemName').value.trim(),
+        number: Number(byId('problemNumber').value),
+        difficulty: byId('problemDifficulty').value,
+        topic: byId('problemTopic').value,
+        dateSolved: byId('problemDate').value || today(),
+        timeTaken: byId('problemTime').value ? Number(byId('problemTime').value) : null,
+        notes: byId('problemNotes').value.trim(),
+        flag: Number(byId('problemFlag').value),
+        lastRevised: existing?.lastRevised || null
+      };
+      if (existing) state.problems = state.problems.map(p => p.id === id ? problem : p);
+      else state.problems.push(problem);
+      save();
+      notify(existing ? 'Problem updated.' : 'Problem saved.');
+      resetProblemForm();
+      renderAll();
+      openTab('problems');
+    }
+
+    function resetProblemForm() {
+      byId('problemForm').reset();
+      byId('problemId').value = '';
+      byId('problemDate').value = today();
+    }
+
+    function renderProblems() {
+      const query = byId('problemSearch')?.value?.toLowerCase() || '';
+      const rows = state.problems
+        .filter(p => [p.name, p.topic, p.difficulty, String(p.number)].join(' ').toLowerCase().includes(query))
+        .sort((a, b) => b.dateSolved.localeCompare(a.dateSolved) || b.number - a.number);
+      byId('problemTable').innerHTML = rows.map(p => `
+        <tr class="border-t border-slate-200 dark:border-line">
+          <td class="py-3">${p.number}</td><td class="font-semibold">${escapeHtml(p.name)}</td>
+          <td>${badge(p.difficulty)}</td><td>${escapeHtml(p.topic)}</td><td>${fmt(p.dateSolved)}</td>
+          <td>${p.timeTaken ? `${p.timeTaken}m` : '-'}</td><td>${flagLabel(p.flag)}</td>
+          <td class="space-x-2"><button class="text-brand" onclick="editProblem('${p.id}')"><i class="fa-solid fa-pen"></i></button><button class="text-danger" onclick="deleteProblem('${p.id}')"><i class="fa-solid fa-trash"></i></button></td>
+        </tr>`).join('');
+      byId('problemEmpty').classList.toggle('hidden', rows.length > 0);
+    }
+
+    window.editProblem = (id) => {
+      const p = state.problems.find(x => x.id === id);
+      if (!p) return;
+      byId('problemId').value = p.id;
+      byId('problemName').value = p.name;
+      byId('problemNumber').value = p.number;
+      byId('problemDifficulty').value = p.difficulty;
+      byId('problemTopic').value = p.topic;
+      byId('problemDate').value = p.dateSolved;
+      byId('problemTime').value = p.timeTaken || '';
+      byId('problemFlag').value = p.flag;
+      byId('problemNotes').value = p.notes || '';
+      openTab('problems');
+    };
+
+    window.deleteProblem = (id) => {
+      if (!confirm('Delete this problem?')) return;
+      state.problems = state.problems.filter(p => p.id !== id);
+      save();
+      notify('Problem deleted.');
+      renderAll();
+    };
+
+    function flagLabel(flag) {
+      return flag === 1 ? 'Easy' : flag === 2 ? 'Struggled' : 'Could not solve';
+    }
+
+    function getNextDue(problem) {
+      const base = problem.lastRevised || problem.dateSolved;
+      const days = problem.flag === 1 ? (problem.lastRevised ? 30 : 7) : 1;
+      const date = new Date(base + 'T00:00:00');
+      date.setDate(date.getDate() + days);
+      return date.toISOString().slice(0, 10);
+    }
+
+    function renderRevisions() {
+      const due = state.problems.filter(p => getNextDue(p) <= today()).sort((a, b) => getNextDue(a).localeCompare(getNextDue(b)));
+      byId('revisionList').innerHTML = due.map(p => `
+        <div class="rounded-lg border border-slate-300 p-4 dark:border-line">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div><p class="font-bold">#${p.number} ${escapeHtml(p.name)}</p><p class="text-sm text-slate-600 dark:text-slate-400">${escapeHtml(p.topic)} • ${badge(p.difficulty)} • Due ${fmt(getNextDue(p))}</p></div>
+            <button class="rounded-md bg-mint px-3 py-2 text-sm font-semibold text-white" onclick="markRevisionDone('${p.id}')"><i class="fa-solid fa-check mr-2"></i>Done</button>
+          </div>
+        </div>`).join('');
+      byId('revisionEmpty').classList.toggle('hidden', due.length > 0);
+    }
+
+    window.markRevisionDone = (id) => {
+      const p = state.problems.find(x => x.id === id);
+      if (!p) return;
+      p.lastRevised = today();
+      state.revisionHistory.push({ id: uid(), problemId: id, date: today() });
+      save();
+      notify('Revision marked done. Next due date recalculated.');
+      renderAll();
+    };
+
+    function saveContest(e) {
+      e.preventDefault();
+      const contest = { id: uid(), date: byId('contestDate').value || today(), solved: Math.min(4, Math.max(0, Number(byId('contestSolved').value || 0))), rank: byId('contestRank').value || null };
+      state.contests.push(contest);
+      save();
+      notify('Contest result saved.');
+      byId('contestForm').reset();
+      byId('contestDate').value = today();
+      renderContests();
+      renderCharts();
+    }
+
+    function renderContests() {
+      const rows = [...state.contests].sort((a, b) => b.date.localeCompare(a.date));
+      byId('contestTable').innerHTML = rows.map(c => `<tr class="border-t border-slate-200 dark:border-line"><td class="py-3">${fmt(c.date)}</td><td>${c.solved}/4</td><td>${c.rank || '-'}</td><td><button class="text-danger" onclick="deleteContest('${c.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+      renderCharts();
+    }
+
+    window.deleteContest = (id) => {
+      if (!confirm('Delete this contest entry?')) return;
+      state.contests = state.contests.filter(c => c.id !== id);
+      save();
+      notify('Contest entry deleted.');
+      renderContests();
+    };
+
+    function generateMockHackathons() {
+      const base = [
+        ['AI Agents Build Week', 'Devpost', 'Online', '$15,000', 'https://devpost.com/hackathons'],
+        ['FinTech Innovation Sprint', 'Devfolio', 'Hybrid', 'INR 8,00,000', 'https://devfolio.co/hackathons'],
+        ['Campus Code Clash', 'Unstop', 'Offline', 'INR 2,50,000', 'https://unstop.com/hackathons'],
+        ['Climate Tech Challenge', 'Devpost', 'Online', '$10,000', 'https://devpost.com/hackathons'],
+        ['Web3 Builder Weekend', 'Devfolio', 'Online', 'INR 5,00,000', 'https://devfolio.co/hackathons'],
+        ['Product Engineering Hack', 'Unstop', 'Hybrid', 'INR 3,00,000', 'https://unstop.com/hackathons']
+      ];
+      return base.map((h, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() + 5 + i * 4);
+        return { id: uid(), name: h[0], platform: h[1], mode: h[2], prize: h[3], link: h[4], date: d.toISOString().slice(0, 10) };
+      });
+    }
+
+    async function refreshHackathons() {
+      byId('hackathonStatus').textContent = 'Trying public Devpost RSS via CORS helper...';
+      try {
+        const url = encodeURIComponent('https://devpost.com/events/upcoming.rss');
+        const res = await fetch(`https://api.allorigins.win/raw?url=${url}`);
+        if (!res.ok) throw new Error('Feed unavailable');
+        const xml = new DOMParser().parseFromString(await res.text(), 'text/xml');
+        const items = [...xml.querySelectorAll('item')].slice(0, 9);
+        if (!items.length) throw new Error('No feed items');
+        state.hackathons = items.map(item => ({
+          id: uid(),
+          name: item.querySelector('title')?.textContent || 'Upcoming hackathon',
+          platform: 'Devpost',
+          date: (item.querySelector('pubDate')?.textContent ? new Date(item.querySelector('pubDate').textContent) : new Date()).toISOString().slice(0, 10),
+          mode: /online/i.test(item.textContent) ? 'Online' : 'Online/Hybrid',
+          prize: 'See listing',
+          link: item.querySelector('link')?.textContent || 'https://devpost.com/hackathons'
+        }));
+        byId('hackathonStatus').textContent = 'Loaded public feed data. Devfolio and Unstop usually require a backend proxy, so mock-compatible fields are preserved.';
+        notify('Hackathon feed refreshed.');
+      } catch (err) {
+        state.hackathons = generateMockHackathons();
+        byId('hackathonStatus').textContent = `Live feed failed (${err.message}). Showing realistic mock data.`;
+        notify('Live feed unavailable. Mock hackathons loaded.', 'warn');
+      }
+      save();
+      renderHackathons();
+    }
+
+    function renderHackathons() {
+      byId('hackathonGrid').innerHTML = (state.hackathons || generateMockHackathons()).map(h => `
+        <article class="rounded-lg border border-slate-300 p-4 dark:border-line">
+          <div class="flex items-start justify-between gap-3"><h3 class="font-bold">${escapeHtml(h.name)}</h3>${badge(h.platform)}</div>
+          <dl class="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-400">
+            <div><dt class="inline font-semibold text-slate-800 dark:text-slate-200">Date:</dt> <dd class="inline">${fmt(h.date)}</dd></div>
+            <div><dt class="inline font-semibold text-slate-800 dark:text-slate-200">Mode:</dt> <dd class="inline">${escapeHtml(h.mode)}</dd></div>
+            <div><dt class="inline font-semibold text-slate-800 dark:text-slate-200">Prize:</dt> <dd class="inline">${escapeHtml(h.prize)}</dd></div>
+          </dl>
+          <a class="mt-4 inline-flex rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white" href="${escapeAttr(h.link)}" target="_blank" rel="noreferrer">Apply <i class="fa-solid fa-arrow-up-right-from-square ml-2"></i></a>
+        </article>`).join('');
+    }
+
+    async function fetchLeetcode() {
+      const username = byId('leetcodeUsername').value.trim();
+      if (!username) return;
+      state.settings.leetcodeUsername = username;
+      byId('leetcodeNote').textContent = 'Fetching LeetCode stats...';
+      try {
+        const res = await fetch(`https://leetcode-stats-api.herokuapp.com/${encodeURIComponent(username)}`);
+        const data = await res.json();
+        if (!res.ok || data.status === 'error') throw new Error(data.message || 'Stats API unavailable');
+        state.leetcodeStats = {
+          totalSolved: data.totalSolved || 0,
+          easySolved: data.easySolved || 0,
+          mediumSolved: data.mediumSolved || 0,
+          hardSolved: data.hardSolved || 0,
+          acceptanceRate: data.acceptanceRate || 'N/A',
+          ranking: data.ranking || 'N/A',
+          contributionPoints: data.contributionPoints || 0,
+          activity: mockActivity(data.totalSolved || 0)
+        };
+        byId('leetcodeNote').textContent = 'Stats loaded. Recent activity is mocked because this public API does not expose a daily activity timeline.';
+        notify('LeetCode stats loaded.');
+      } catch (err) {
+        state.leetcodeStats = null;
+        byId('leetcodeNote').textContent = `Could not fetch stats: ${err.message}. Check the username or try again later.`;
+        notify('LeetCode stats API failed. Try again later.', 'warn');
+      }
+      save();
+      renderLeetcode();
+    }
+
+    function renderLeetcode() {
+      const s = state.leetcodeStats;
+      const stats = s ? [
+        ['Total solved', s.totalSolved], ['Easy', s.easySolved], ['Medium', s.mediumSolved], ['Hard', s.hardSolved], ['Acceptance', `${s.acceptanceRate}%`], ['Ranking', s.ranking], ['Contribution', s.contributionPoints]
+      ] : [['Total solved', '-'], ['Easy', '-'], ['Medium', '-'], ['Hard', '-'], ['Acceptance', '-'], ['Ranking', '-']];
+      byId('leetcodeStats').innerHTML = stats.map(([label, value]) => `<div class="rounded-lg border border-slate-300 p-4 dark:border-line"><p class="text-sm text-slate-500 dark:text-slate-400">${label}</p><p class="mt-1 text-2xl font-bold">${value}</p></div>`).join('');
+      renderCharts();
+    }
+
+    function mockActivity(seed = 0) {
+      return Array.from({ length: 10 }, (_, i) => ({ date: `Day ${i + 1}`, count: Math.max(0, ((seed + i * 3) % 7) - 1) }));
+    }
+
+    function parseJobSummary() {
+      const text = byId('jobSummary').value.trim();
+      if (!text) { byId('parseMessage').textContent = 'Paste a job summary first.'; return; }
+      const top = text.slice(0, 900);
+      const titleMatch = text.match(/(?:job title|position|role)\s*[:\-]\s*([^\n]+)/i) || text.match(/\b(Software Engineer|Frontend Developer|Backend Developer|Full Stack Developer|Data Scientist|Machine Learning Engineer|DevOps Engineer|Product Engineer|SDE ?[1-3]?|QA Engineer)\b/i);
+      const companyMatch = text.match(/(?:company|organization|employer)\s*[:\-]\s*([^\n]+)/i) || top.match(/\b(?:at|with)\s+([A-Z][A-Za-z0-9&.\- ]{2,40})/);
+      const locationMatch = text.match(/(?:location|workplace)\s*[:\-]\s*([^\n]+)/i) || text.match(/\b(Remote|Hybrid|Bengaluru|Bangalore|Hyderabad|Pune|Mumbai|Delhi|Gurugram|Noida|Chennai|Kolkata|New York|San Francisco|London|Singapore)\b/i);
+      const deadlineMatch = text.match(/(?:closing date|apply by|deadline)\s*[:\-]\s*([A-Za-z0-9,\/\-. ]{6,30})/i);
+      const salaryMatch = text.match(/(?:salary|compensation|ctc)\s*[:\-]?\s*([$₹]?\s?\d[\d,]*(?:\s?-\s?[$₹]?\s?\d[\d,]*)?(?:\s?(?:LPA|lakhs|per year|\/yr|USD|INR))?)/i);
+      const skillWords = ['JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'Go', 'Rust', 'SQL', 'HTML', 'CSS', 'React', 'Angular', 'Vue', 'Node.js', 'Express', 'Django', 'Flask', 'Spring', 'Tailwind', 'AWS', 'Azure', 'GCP', 'Docker', 'Kubernetes', 'Git', 'MongoDB', 'PostgreSQL', 'MySQL', 'Redis', 'GraphQL', 'REST', 'Machine Learning', 'TensorFlow', 'PyTorch'];
+      const skills = [...new Set(skillWords.filter(s => new RegExp(`\\b${escapeRegExp(s)}\\b`, 'i').test(text)))];
+      byId('jobTitle').value = clean(titleMatch?.[1] || titleMatch?.[0] || '');
+      byId('jobCompany').value = clean(companyMatch?.[1] || '');
+      byId('jobLocation').value = clean(locationMatch?.[1] || locationMatch?.[0] || '');
+      byId('jobSkills').value = skills.join(', ');
+      byId('jobDeadline').value = clean(deadlineMatch?.[1] || '');
+      byId('jobSalary').value = clean(salaryMatch?.[1] || '');
+      byId('jobNotes').value = text.slice(0, 1000);
+      byId('parseMessage').textContent = skills.length || titleMatch || companyMatch ? 'Parsed what I could. Review the form before saving.' : 'Could not confidently extract fields. You can still fill the form manually.';
+      notify('Job summary parsed. Review before saving.');
+    }
+
+    function saveJob(e) {
+      e.preventDefault();
+      const id = byId('jobId').value || uid();
+      const job = {
+        id,
+        title: byId('jobTitle').value.trim(),
+        company: byId('jobCompany').value.trim(),
+        location: byId('jobLocation').value.trim(),
+        applicationDate: byId('jobDate').value || today(),
+        status: byId('jobStatus').value,
+        link: byId('jobLink').value.trim(),
+        skills: byId('jobSkills').value.split(',').map(s => s.trim()).filter(Boolean),
+        deadline: byId('jobDeadline').value.trim(),
+        salary: byId('jobSalary').value.trim(),
+        notes: byId('jobNotes').value.trim()
+      };
+      jobs = jobs.some(j => j.id === id) ? jobs.map(j => j.id === id ? job : j) : [job, ...jobs];
+      save();
+      notify(byId('jobId').value ? 'Job application updated.' : 'Job application saved.');
+      resetJobForm();
+      renderJobs();
+      renderDashboard();
+    }
+
+    function resetJobForm() {
+      byId('jobForm').reset();
+      byId('jobId').value = '';
+      byId('jobDate').value = today();
+    }
+
+    function renderJobs() {
+      const filter = byId('jobStatusFilter')?.value || 'All';
+      const rows = jobs.filter(j => filter === 'All' || j.status === filter).sort((a, b) => b.applicationDate.localeCompare(a.applicationDate));
+      byId('jobTable').innerHTML = rows.map(j => `
+        <tr class="border-t border-slate-200 dark:border-line">
+          <td class="py-3 font-semibold">${j.link ? `<a class="text-brand" href="${escapeAttr(j.link)}" target="_blank" rel="noreferrer">${escapeHtml(j.title)}</a>` : escapeHtml(j.title)}</td>
+          <td>${escapeHtml(j.company)}</td><td>${escapeHtml(j.location || '-')}</td><td>${badge(j.status)}</td><td>${fmt(j.applicationDate)}</td>
+          <td>${(j.skills || []).slice(0, 3).map(badge).join(' ')}${(j.skills || []).length > 3 ? ` <span class="text-xs text-slate-500">+${j.skills.length - 3}</span>` : ''}</td>
+          <td class="space-x-2"><button class="text-brand" onclick="editJob('${j.id}')"><i class="fa-solid fa-pen"></i></button><button class="text-danger" onclick="deleteJob('${j.id}')"><i class="fa-solid fa-trash"></i></button></td>
+        </tr>`).join('');
+      byId('jobEmpty').classList.toggle('hidden', rows.length > 0);
+    }
+
+    window.editJob = (id) => {
+      const j = jobs.find(x => x.id === id);
+      if (!j) return;
+      byId('jobId').value = j.id;
+      byId('jobTitle').value = j.title;
+      byId('jobCompany').value = j.company;
+      byId('jobLocation').value = j.location || '';
+      byId('jobDate').value = j.applicationDate;
+      byId('jobStatus').value = j.status;
+      byId('jobLink').value = j.link || '';
+      byId('jobSkills').value = (j.skills || []).join(', ');
+      byId('jobDeadline').value = j.deadline || '';
+      byId('jobSalary').value = j.salary || '';
+      byId('jobNotes').value = j.notes || '';
+      openTab('jobs');
+    };
+
+    window.deleteJob = (id) => {
+      if (!confirm('Delete this job application?')) return;
+      jobs = jobs.filter(j => j.id !== id);
+      save();
+      notify('Job application deleted.');
+      renderJobs();
+      renderDashboard();
+    };
+
+    const weeklyTasks = [
+      ['dsa_weeknights', 'Mon-Thu: 1 hour DSA, 1 new Medium, 1 revision'],
+      ['friday_review', 'Friday: review contest problems or backlog'],
+      ['sunday_dsa', 'Sunday 9-11: DSA new topic block'],
+      ['sunday_jobs', 'Sunday 11-1: apply to 10-15 remote internships'],
+      ['sunday_project', 'Sunday 2-4: project or hackathon improvement'],
+      ['sunday_mock', 'Sunday 4-6: mock interview or behavioural prep'],
+      ['sunday_review', 'Sunday 6-7: update tracker and plan next week'],
+      ['health_rules', 'Daily: 7+ hours sleep, no caffeine after 6 PM, 30 min movement']
+    ];
+
+    function renderPlanner() {
+      state.planner = { checklist: {}, referrals: [], mocks: [], health: [], ...(state.planner || {}) };
+      byId('weeklyChecklist').innerHTML = weeklyTasks.map(([key, label]) => `
+        <label class="flex items-start gap-3 rounded-md border border-slate-300 p-3 text-sm dark:border-line">
+          <input type="checkbox" class="mt-1" ${state.planner.checklist[key] ? 'checked' : ''} onchange="toggleWeeklyTask('${key}', this.checked)" />
+          <span>${escapeHtml(label)}</span>
+        </label>`).join('');
+      renderMonthlyReview();
+      renderReferralList();
+      renderMockList();
+      renderHealthList();
+    }
+
+    function renderMonthlyReview() {
+      const monthStart = new Date();
+      monthStart.setDate(1);
+      monthStart.setHours(0, 0, 0, 0);
+      const inMonth = (date) => date && new Date(date + 'T00:00:00') >= monthStart;
+      const monthProblems = state.problems.filter(p => inMonth(p.dateSolved)).length;
+      const monthJobs = jobs.filter(j => inMonth(j.applicationDate)).length;
+      const monthMocks = state.planner.mocks.filter(m => inMonth(m.date)).length;
+      const monthReferrals = state.planner.referrals.filter(r => inMonth(r.date)).length;
+      const cards = [
+        ['DSA this month', `${monthProblems} solved`, 'Target: roughly 75-100/month for 300-400 by deadline'],
+        ['Applications this month', `${monthJobs} sent`, 'Target: 40+/month from Sunday batches'],
+        ['Network outreach', `${monthReferrals} logged`, 'Target: 5 per weekend'],
+        ['Mock interviews', `${monthMocks} done`, 'Target: weekly from August']
+      ];
+      byId('monthlyReview').innerHTML = cards.map(([title, value, hint]) => `
+        <div class="rounded-lg border border-slate-300 p-4 dark:border-line">
+          <p class="text-sm text-slate-500 dark:text-slate-400">${title}</p>
+          <p class="mt-1 text-2xl font-bold">${value}</p>
+          <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">${hint}</p>
+        </div>`).join('');
+    }
+
+    window.toggleWeeklyTask = (key, checked) => {
+      state.planner.checklist[key] = checked;
+      save();
+      notify(checked ? 'Weekly task checked off.' : 'Weekly task reopened.');
+    };
+
+    function saveReferral(e) {
+      e.preventDefault();
+      state.planner.referrals.unshift({
+        id: uid(),
+        name: byId('referralName').value.trim(),
+        company: byId('referralCompany').value.trim(),
+        date: byId('referralDate').value || today(),
+        status: byId('referralStatus').value,
+        notes: byId('referralNotes').value.trim()
+      });
+      save();
+      byId('referralForm').reset();
+      byId('referralDate').value = today();
+      notify('Outreach saved.');
+      renderPlanner();
+      renderDashboard();
+    }
+
+    function renderReferralList() {
+      const rows = state.planner.referrals.slice(0, 8);
+      byId('referralList').innerHTML = rows.length ? rows.map(r => `
+        <div class="flex items-start justify-between gap-3 rounded-md border border-slate-300 p-3 text-sm dark:border-line">
+          <div><p class="font-semibold">${escapeHtml(r.name)} ${r.company ? `- ${escapeHtml(r.company)}` : ''}</p><p class="text-slate-600 dark:text-slate-400">${fmt(r.date)} • ${badge(r.status)} ${r.notes ? `• ${escapeHtml(r.notes)}` : ''}</p></div>
+          <button class="text-danger" onclick="deleteReferral('${r.id}')"><i class="fa-solid fa-trash"></i></button>
+        </div>`).join('') : '<p class="text-sm text-slate-500">No outreach logged yet.</p>';
+    }
+
+    window.deleteReferral = (id) => {
+      state.planner.referrals = state.planner.referrals.filter(r => r.id !== id);
+      save();
+      notify('Outreach deleted.');
+      renderPlanner();
+      renderDashboard();
+    };
+
+    function saveMock(e) {
+      e.preventDefault();
+      state.planner.mocks.unshift({
+        id: uid(),
+        date: byId('mockDate').value || today(),
+        platform: byId('mockPlatform').value.trim(),
+        type: byId('mockType').value,
+        score: byId('mockScore').value ? Number(byId('mockScore').value) : null,
+        wentWell: byId('mockWentWell').value.trim(),
+        improve: byId('mockImprove').value.trim()
+      });
+      save();
+      byId('mockForm').reset();
+      byId('mockDate').value = today();
+      notify('Mock interview saved.');
+      renderPlanner();
+      renderDashboard();
+    }
+
+    function renderMockList() {
+      const rows = state.planner.mocks.slice(0, 8);
+      byId('mockList').innerHTML = rows.length ? rows.map(m => `
+        <div class="flex items-start justify-between gap-3 rounded-md border border-slate-300 p-3 text-sm dark:border-line">
+          <div><p class="font-semibold">${fmt(m.date)} • ${escapeHtml(m.type)} ${m.score ? `• ${m.score}/10` : ''}</p><p class="text-slate-600 dark:text-slate-400">${escapeHtml(m.platform || 'Mock interview')} ${m.improve ? `• Improve: ${escapeHtml(m.improve)}` : ''}</p></div>
+          <button class="text-danger" onclick="deleteMock('${m.id}')"><i class="fa-solid fa-trash"></i></button>
+        </div>`).join('') : '<p class="text-sm text-slate-500">No mock interviews logged yet.</p>';
+    }
+
+    window.deleteMock = (id) => {
+      state.planner.mocks = state.planner.mocks.filter(m => m.id !== id);
+      save();
+      notify('Mock deleted.');
+      renderPlanner();
+      renderDashboard();
+    };
+
+    function saveHealth(e) {
+      e.preventDefault();
+      state.planner.health.unshift({
+        id: uid(),
+        date: byId('healthDate').value || today(),
+        sleepHours: Number(byId('sleepHours').value || 0),
+        prepHours: Number(byId('prepHours').value || 0),
+        notes: byId('healthNotes').value.trim()
+      });
+      save();
+      byId('healthForm').reset();
+      byId('healthDate').value = today();
+      notify('Health check-in saved.');
+      renderPlanner();
+      renderDashboard();
+    }
+
+    function renderHealthList() {
+      const rows = state.planner.health.slice(0, 8);
+      byId('healthList').innerHTML = rows.length ? rows.map(h => `
+        <div class="flex items-start justify-between gap-3 rounded-md border border-slate-300 p-3 text-sm dark:border-line">
+          <div><p class="font-semibold">${fmt(h.date)} • Sleep ${h.sleepHours || 0}h • Prep ${h.prepHours || 0}h</p><p class="text-slate-600 dark:text-slate-400">${escapeHtml(h.notes || 'No notes')}</p></div>
+          <button class="text-danger" onclick="deleteHealth('${h.id}')"><i class="fa-solid fa-trash"></i></button>
+        </div>`).join('') : '<p class="text-sm text-slate-500">No health check-ins yet.</p>';
+    }
+
+    window.deleteHealth = (id) => {
+      state.planner.health = state.planner.health.filter(h => h.id !== id);
+      save();
+      notify('Health check-in deleted.');
+      renderPlanner();
+      renderDashboard();
+    };
+
+    function getFollowUpJobs() {
+      const now = new Date(today() + 'T00:00:00');
+      return jobs.filter(j => ['Applied', 'Interviewing'].includes(j.status)).filter(j => {
+        const d = new Date((j.applicationDate || today()) + 'T00:00:00');
+        d.setDate(d.getDate() + 7);
+        return d <= now;
+      });
+    }
+
+    function getHealthSignal() {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 7);
+      const recent = (state.planner.health || []).filter(h => new Date(h.date + 'T00:00:00') >= cutoff);
+      if (!recent.length) return { label: 'Good', detail: 'Log sleep and prep hours in Planner' };
+      const avgSleep = recent.reduce((sum, h) => sum + (h.sleepHours || 0), 0) / recent.length;
+      const prep = recent.reduce((sum, h) => sum + (h.prepHours || 0), 0);
+      const internship = 60;
+      const load = internship + prep;
+      if (avgSleep && avgSleep < 6.5) return { label: 'Rest', detail: `Avg sleep ${avgSleep.toFixed(1)}h. Protect recovery.` };
+      if (load > 50) return { label: 'High', detail: `${load.toFixed(1)}h estimated weekly load. Watch burnout.` };
+      return { label: 'Good', detail: `Avg sleep ${avgSleep.toFixed(1)}h, prep ${prep.toFixed(1)}h/week.` };
+    }
+
+    function saveOpenrouterSettings() {
+      const key = byId('openrouterKey').value.trim();
+      const model = byId('openrouterModel').value.trim() || 'openrouter/auto';
+      if (key) localStorage.setItem('openrouterApiKey', key);
+      state.settings.openrouterModel = model;
+      byId('openrouterKey').value = '';
+      byId('openrouterStatus').textContent = localStorage.getItem('openrouterApiKey') ? `OpenRouter enabled with model: ${model}` : `Model saved: ${model}. Add a key to enable AI.`;
+      save();
+      notify('OpenRouter settings saved locally.');
+    }
+
+    function clearOpenrouterSettings() {
+      localStorage.removeItem('openrouterApiKey');
+      byId('openrouterKey').value = '';
+      byId('openrouterStatus').textContent = 'OpenRouter key cleared from this browser.';
+      notify('OpenRouter key cleared.');
+    }
+
+    window.fillAiPrompt = (type) => {
+      const prompts = {
+        weekly: 'Create a realistic next-7-days execution plan for my 10 AM-8 PM internship schedule. Balance DSA, revision, job applications, project improvement, referrals, mock prep, and rest.',
+        dsa: 'Analyze my DSA tracker and tell me which topics to focus on next. Give a concise June-August style plan with daily and Sunday blocks.',
+        jobs: 'Analyze my job application tracker and suggest a paid remote internship strategy. Include follow-ups, platforms, and what skills to highlight.',
+        review: 'Run a monthly review from my tracker data. Tell me what is on track, what is behind, and the top 5 actions for next week.'
+      };
+      byId('aiPrompt').value = prompts[type] || prompts.weekly;
+      openTab('ai');
+    };
+
+    function buildAiContext() {
+      const diff = countBy(state.problems, 'difficulty');
+      const topic = countBy(state.problems, 'topic');
+      const jobStatus = countBy(jobs, 'status');
+      const dueRevisions = state.problems.filter(p => getNextDue(p) <= today()).length;
+      const followUps = getFollowUpJobs().length;
+      const health = getHealthSignal();
+      return {
+        date: today(),
+        dsa: {
+          totalSolved: state.problems.length,
+          goal: state.settings.goal,
+          difficulty: diff,
+          topics: topic,
+          dueRevisions
+        },
+        jobs: {
+          total: jobs.length,
+          status: jobStatus,
+          followUpsDue: followUps,
+          recentSkills: [...new Set(jobs.flatMap(j => j.skills || []))].slice(0, 20)
+        },
+        planner: {
+          referrals: state.planner.referrals.length,
+          mocks: state.planner.mocks.length,
+          healthSignal: health
+        },
+        constraints: {
+          internship: '10 AM to 8 PM, Monday to Saturday',
+          deadline: 'August 31, 2026',
+          goals: ['300-400 DSA problems', 'paid remote internships', 'hackathons', 'project improvements', 'placements']
+        }
+      };
+    }
+
+    async function runAiCoach() {
+      const apiKey = localStorage.getItem('openrouterApiKey');
+      const model = byId('openrouterModel').value.trim() || state.settings.openrouterModel || 'openrouter/auto';
+      const prompt = byId('aiPrompt').value.trim();
+      if (!prompt) {
+        notify('Write a prompt or choose a quick prompt.', 'warn');
+        return;
+      }
+      state.settings.openrouterModel = model;
+      save();
+      byId('aiOutput').textContent = 'Thinking...';
+      byId('runAiBtn').disabled = true;
+      try {
+        const context = buildAiContext();
+        const res = apiKey
+          ? await fetch('https://openrouter.ai/api/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json',
+                'HTTP-Referer': location.origin,
+                'X-Title': 'DSA Grind Tracker'
+              },
+              body: JSON.stringify({
+                model,
+                messages: makeAiMessages(context, prompt),
+                temperature: 0.4
+              })
+            })
+          : await fetch('/api/ai-coach', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ model, context, prompt })
+            });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error?.message || data?.message || 'OpenRouter request failed');
+        byId('aiOutput').textContent = data.reply || data.choices?.[0]?.message?.content || 'No response returned.';
+        notify('AI coach response generated.');
+      } catch (err) {
+        byId('aiOutput').textContent = `AI request failed: ${err.message}\n\nFor Vercel, set OPENROUTER_API_KEY in Project Settings > Environment Variables. For local testing, paste a key in OpenRouter Setup or run the server with OPENROUTER_API_KEY set.`;
+        notify('AI request failed.', 'error');
+      } finally {
+        byId('runAiBtn').disabled = false;
+      }
+    }
+
+    function makeAiMessages(context, prompt) {
+      return [
+        {
+          role: 'system',
+          content: 'You are a concise execution coach for a CS student. Give practical, time-aware plans. Avoid fluff. Use the tracker context and return clear bullets.'
+        },
+        {
+          role: 'user',
+          content: `Tracker context:\n${JSON.stringify(context, null, 2)}\n\nUser request:\n${prompt}`
+        }
+      ];
+    }
+
+    function exportAll() {
+      downloadJson('dsa-grind-backup.json', { ...state, jobApplications: jobs, exportedAt: new Date().toISOString() });
+    }
+
+    function importAll(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          const defaults = defaultState();
+          state = {
+            ...defaults,
+            ...data,
+            settings: { ...defaults.settings, ...(data.settings || {}) },
+            planner: { ...defaults.planner, ...(data.planner || {}) }
+          };
+          jobs = data.jobApplications || data.jobs || [];
+          save();
+          notify('Backup imported successfully.');
+          location.reload();
+        } catch { notify('Import failed. Please choose a valid JSON backup.', 'error'); }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetAll() {
+      if (!confirm('This clears all local tracker data. Continue?')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(JOB_KEY);
+      location.reload();
+    }
+
+    function downloadJson(filename, data) {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      notify(`${filename} downloaded.`);
+    }
+
+    function notify(message, type = 'success') {
+      const host = byId('toastHost');
+      if (!host) return;
+      const colors = {
+        success: 'border-green-300 bg-green-50 text-green-900 dark:border-green-900 dark:bg-green-950 dark:text-green-100',
+        warn: 'border-yellow-300 bg-yellow-50 text-yellow-900 dark:border-yellow-900 dark:bg-yellow-950 dark:text-yellow-100',
+        error: 'border-red-300 bg-red-50 text-red-900 dark:border-red-900 dark:bg-red-950 dark:text-red-100'
+      };
+      const icons = { success: 'fa-circle-check', warn: 'fa-triangle-exclamation', error: 'fa-circle-xmark' };
+      const toast = document.createElement('div');
+      toast.className = `toast pointer-events-auto rounded-lg border px-4 py-3 text-sm font-semibold shadow-lg ${colors[type] || colors.success}`;
+      toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.success} mr-2"></i>${escapeHtml(message)}`;
+      host.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-6px)';
+        setTimeout(() => toast.remove(), 180);
+      }, 2600);
+    }
+
+    function badge(text) {
+      const map = { Easy: 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200', Medium: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200', Hard: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200', Applied: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-200', Interviewing: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-200', 'Offer Received': 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200', Rejected: 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200', Wishlist: 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200' };
+      return `<span class="inline-flex rounded-full px-2 py-1 text-xs font-semibold ${map[text] || 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200'}">${escapeHtml(String(text))}</span>`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+    }
+    function escapeAttr(value) { return escapeHtml(value).replace(/`/g, '&#096;'); }
+    function escapeRegExp(value) { return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+    function clean(value) { return String(value || '').replace(/\s+/g, ' ').replace(/[.;,]+$/, '').trim(); }
+
+    init();
+  </script>
+</body>
+</html>

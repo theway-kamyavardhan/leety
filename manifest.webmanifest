@@ -1,0 +1,10 @@
+{
+  "name": "DSA Grind Tracker",
+  "short_name": "DSA Tracker",
+  "description": "Local-first LeetCode, revision, contest, hackathon, and job application tracker.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0e1117",
+  "theme_color": "#0e1117",
+  "icons": []
+}
