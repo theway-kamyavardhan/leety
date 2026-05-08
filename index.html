@@ -18,14 +18,19 @@
     .light { color-scheme: light; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
-    .tab-btn.active { background: #2f81f7; color: #fff; border-color: #2f81f7; }
-    .light .tab-btn.active { background: #1d4ed8; border-color: #1d4ed8; }
+    .tab-btn.active { background: rgba(47,129,247,.18); color: #fff; border-color: rgba(47,129,247,.55); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 10px 30px rgba(47,129,247,.15); }
+    .light .tab-btn.active { background: rgba(29,78,216,.12); color: #1d4ed8; border-color: rgba(29,78,216,.35); }
     input, select, textarea { outline: none; }
     button, a, input, select, textarea { transition: background-color .18s ease, border-color .18s ease, color .18s ease, opacity .18s ease, transform .18s ease, box-shadow .18s ease; }
     button:hover, a.rounded-md:hover { transform: translateY(-1px); }
     input:focus, select:focus, textarea:focus { border-color: #2f81f7; box-shadow: 0 0 0 3px rgba(47, 129, 247, .18); }
-    .premium-card { box-shadow: 0 16px 40px rgba(2, 6, 23, .08); }
+    .premium-card { box-shadow: 0 16px 40px rgba(2, 6, 23, .08); backdrop-filter: blur(18px); }
     .dark .premium-card { box-shadow: 0 16px 40px rgba(0, 0, 0, .22); }
+    .glass-panel { background: rgba(255,255,255,.78); border: 1px solid rgba(148,163,184,.28); box-shadow: 0 24px 70px rgba(15,23,42,.12); backdrop-filter: blur(22px); }
+    .dark .glass-panel { background: rgba(22,27,34,.72); border-color: rgba(148,163,184,.14); box-shadow: 0 24px 70px rgba(0,0,0,.32); }
+    .app-shell::before { content: ""; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(circle at 20% 10%, rgba(47,129,247,.18), transparent 28%), radial-gradient(circle at 85% 18%, rgba(46,160,67,.12), transparent 26%), radial-gradient(circle at 52% 88%, rgba(210,153,34,.08), transparent 30%); }
+    .sidebar-link { width: 100%; justify-content: flex-start; gap: .75rem; border-radius: 14px; padding: .78rem .9rem; }
+    .sidebar-link i { width: 1.15rem; text-align: center; }
     .toast { animation: toast-in .22s ease both; }
     @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -34,10 +39,39 @@
     canvas { max-height: 320px; }
   </style>
 </head>
-<body class="min-h-screen bg-slate-100 text-slate-900 dark:bg-ink dark:text-slate-100">
+<body class="app-shell min-h-screen bg-slate-100 text-slate-900 dark:bg-ink dark:text-slate-100">
   <div class="pointer-events-none fixed right-4 top-4 z-50 grid w-[min(360px,calc(100vw-2rem))] gap-2" id="toastHost" aria-live="polite" aria-atomic="true"></div>
-  <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-    <header class="flex flex-col gap-4 border-b border-slate-300 pb-5 dark:border-line lg:flex-row lg:items-center lg:justify-between">
+  <aside class="glass-panel fixed left-4 top-4 z-40 hidden h-[calc(100vh-2rem)] w-72 flex-col rounded-3xl p-4 lg:flex">
+    <div class="flex items-center gap-3 px-2 py-3">
+      <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand text-lg text-white shadow-lg shadow-blue-500/20"><i class="fa-solid fa-code"></i></div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-brand">LeetCode OS</p>
+        <h1 class="text-lg font-bold">DSA Command</h1>
+      </div>
+    </div>
+    <nav class="mt-4 grid gap-1 overflow-y-auto pr-1">
+      <button class="tab-btn sidebar-link active flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="dashboard"><i class="fa-solid fa-chart-line"></i>Dashboard</button>
+      <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="problems"><i class="fa-solid fa-list-check"></i>Problems</button>
+      <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="weekly"><i class="fa-solid fa-calendar-days"></i>Weekly Plan</button>
+      <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="sheets"><i class="fa-solid fa-layer-group"></i>Sheets</button>
+      <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="revisions"><i class="fa-solid fa-rotate-right"></i>Revisions</button>
+      <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="faang"><i class="fa-solid fa-bullseye"></i>FAANG Review</button>
+      <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="leetcode"><i class="fa-solid fa-code"></i>LeetCode Stats</button>
+      <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="resume"><i class="fa-solid fa-file-lines"></i>Resume</button>
+      <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="jobs"><i class="fa-solid fa-briefcase"></i>Jobs</button>
+      <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="ai"><i class="fa-solid fa-wand-magic-sparkles"></i>AI Coach</button>
+      <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="planner"><i class="fa-solid fa-calendar-check"></i>Planner</button>
+      <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="contests"><i class="fa-solid fa-trophy"></i>Contests</button>
+      <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="hackathons"><i class="fa-solid fa-lightbulb"></i>Hackathons</button>
+    </nav>
+    <div class="mt-auto rounded-2xl border border-slate-300/50 bg-white/50 p-3 text-xs text-slate-600 dark:border-line dark:bg-white/5 dark:text-slate-400">
+      <p class="font-semibold text-slate-800 dark:text-slate-200">Premium local-first tracker</p>
+      <p class="mt-1">All data lives in your browser. Export often.</p>
+    </div>
+  </aside>
+  <div class="relative mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:ml-80 lg:mr-6 lg:px-8">
+    <header class="glass-panel rounded-3xl p-5 lg:p-6">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <p class="text-sm font-semibold uppercase tracking-wide text-brand">LeetCode grind command center</p>
         <h1 class="mt-1 text-3xl font-bold sm:text-4xl">DSA Progress Tracker</h1>
@@ -54,9 +88,10 @@
         </label>
         <button id="resetAllBtn" class="rounded-md bg-danger px-3 py-2 text-sm font-semibold text-white hover:opacity-90"><i class="fa-solid fa-trash mr-2"></i>Reset</button>
       </div>
+      </div>
     </header>
 
-    <nav class="mt-5 flex gap-2 overflow-x-auto pb-2">
+    <nav class="glass-panel sticky top-3 z-30 mt-4 flex gap-2 overflow-x-auto rounded-2xl p-2 lg:hidden">
       <button class="tab-btn active shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="dashboard"><i class="fa-solid fa-chart-line mr-2"></i>Dashboard</button>
       <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="problems"><i class="fa-solid fa-list-check mr-2"></i>Problems</button>
       <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="revisions"><i class="fa-solid fa-rotate-right mr-2"></i>Revisions</button>
