@@ -49,3 +49,4 @@ The AI Coach uses `/api/ai-coach`, a Vercel serverless function, so your OpenRou
 - The Planner tab turns the full prep strategy into a weekly checklist, monthly review, referral tracker, mock interview log, and health load check.
 - The AI Coach tab calls OpenRouter through `/api/ai-coach` when `OPENROUTER_API_KEY` is configured. A local browser key is still available as an optional dev fallback, but production should use the Vercel environment variable.
 - The Sheets tab includes a built-in high-priority starter integration for NeetCode 150 and Striver SDE Sheet, with links back to the official/canonical sheet pages for the full lists.
+- AI Coach now supports coach modes: Execution Coach, DSA Mentor, Career Strategist, Monthly Reviewer, and Strict Accountability. It sends tracker summaries, sheet progress, weak topics, due revisions, follow-ups, mock logs, and health load into a structured prompt.

@@ -359,6 +359,13 @@
               <div class="mt-4 grid gap-3">
                 <input id="openrouterKey" type="password" placeholder="OpenRouter API key" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" autocomplete="off" />
                 <input id="openrouterModel" placeholder="Model, e.g. openrouter/auto" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                <select id="aiCoachMode" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink">
+                  <option value="execution">Execution Coach</option>
+                  <option value="dsa">DSA Mentor</option>
+                  <option value="career">Career Strategist</option>
+                  <option value="review">Monthly Reviewer</option>
+                  <option value="strict">Strict Accountability</option>
+                </select>
                 <div class="flex gap-2">
                   <button id="saveOpenrouterBtn" class="flex-1 rounded-md bg-brand px-3 py-2 font-semibold text-white" type="button"><i class="fa-solid fa-key mr-2"></i>Save Settings</button>
                   <button id="clearOpenrouterBtn" class="rounded-md border border-slate-300 px-3 py-2 font-semibold dark:border-line" type="button">Clear</button>
@@ -374,15 +381,20 @@
                 <button class="rounded-md border border-slate-300 px-3 py-2 text-left text-sm font-semibold dark:border-line" type="button" onclick="fillAiPrompt('dsa')"><i class="fa-solid fa-code mr-2 text-brand"></i>Recommend DSA focus topics</button>
                 <button class="rounded-md border border-slate-300 px-3 py-2 text-left text-sm font-semibold dark:border-line" type="button" onclick="fillAiPrompt('jobs')"><i class="fa-solid fa-briefcase mr-2 text-brand"></i>Improve job application strategy</button>
                 <button class="rounded-md border border-slate-300 px-3 py-2 text-left text-sm font-semibold dark:border-line" type="button" onclick="fillAiPrompt('review')"><i class="fa-solid fa-chart-simple mr-2 text-brand"></i>Run monthly review</button>
+                <button class="rounded-md border border-slate-300 px-3 py-2 text-left text-sm font-semibold dark:border-line" type="button" onclick="fillAiPrompt('mock')"><i class="fa-solid fa-microphone-lines mr-2 text-brand"></i>Prepare mock interview</button>
+                <button class="rounded-md border border-slate-300 px-3 py-2 text-left text-sm font-semibold dark:border-line" type="button" onclick="fillAiPrompt('burnout')"><i class="fa-solid fa-heart-pulse mr-2 text-brand"></i>Fix burnout risk</button>
               </div>
             </div>
           </div>
 
           <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
             <h2 class="text-xl font-bold">AI Execution Coach</h2>
-            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Ask for a plan using your tracker data. On deployment, this uses your Vercel serverless function and environment variable.</p>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Ask for a plan using tracker data, sheet progress, follow-ups, revisions, health load, and your 10-8 internship constraint.</p>
             <textarea id="aiPrompt" rows="8" placeholder="Ask for a weekly plan, DSA topic plan, job strategy, mock interview prep..." class="mt-4 w-full rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"></textarea>
-            <button id="runAiBtn" class="mt-3 rounded-md bg-brand px-3 py-2 font-semibold text-white" type="button"><i class="fa-solid fa-paper-plane mr-2"></i>Ask AI Coach</button>
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button id="runAiBtn" class="rounded-md bg-brand px-3 py-2 font-semibold text-white" type="button"><i class="fa-solid fa-paper-plane mr-2"></i>Ask AI Coach</button>
+              <button id="copyAiBtn" class="rounded-md border border-slate-300 px-3 py-2 font-semibold dark:border-line" type="button"><i class="fa-solid fa-copy mr-2"></i>Copy Response</button>
+            </div>
             <div id="aiOutput" class="mt-4 min-h-[220px] whitespace-pre-wrap rounded-lg border border-slate-300 bg-slate-50 p-4 text-sm leading-6 text-slate-800 dark:border-line dark:bg-ink dark:text-slate-200">AI responses will appear here.</div>
           </div>
         </div>
@@ -500,7 +512,7 @@
           health: []
         },
         sheetProgress: {},
-        settings: { goal: 300, theme: 'dark', leetcodeUsername: '', openrouterModel: 'openrouter/auto' },
+        settings: { goal: 300, theme: 'dark', leetcodeUsername: '', openrouterModel: 'openrouter/auto', aiCoachMode: 'execution' },
         leetcodeStats: null,
         hackathons: generateMockHackathons()
       };
@@ -541,6 +553,7 @@
       byId('goalInput').value = state.settings.goal;
       byId('leetcodeUsername').value = state.settings.leetcodeUsername || '';
       byId('openrouterModel').value = state.settings.openrouterModel || 'openrouter/auto';
+      byId('aiCoachMode').value = state.settings.aiCoachMode || 'execution';
       byId('openrouterStatus').textContent = localStorage.getItem('openrouterApiKey') ? 'Local OpenRouter key is saved for this browser.' : 'Vercel mode uses OPENROUTER_API_KEY. Local key is optional.';
       document.documentElement.classList.toggle('dark', state.settings.theme !== 'light');
       document.documentElement.classList.toggle('light', state.settings.theme === 'light');
@@ -571,6 +584,8 @@
       byId('saveOpenrouterBtn').addEventListener('click', saveOpenrouterSettings);
       byId('clearOpenrouterBtn').addEventListener('click', clearOpenrouterSettings);
       byId('runAiBtn').addEventListener('click', runAiCoach);
+      byId('copyAiBtn').addEventListener('click', copyAiResponse);
+      byId('aiCoachMode').addEventListener('change', e => { state.settings.aiCoachMode = e.target.value; save(); });
       byId('sheetFilter').addEventListener('change', renderSheets);
       byId('sheetTopicFilter').addEventListener('change', renderSheets);
       byId('sheetStatusFilter').addEventListener('change', renderSheets);
@@ -1287,11 +1302,17 @@
 
     window.fillAiPrompt = (type) => {
       const prompts = {
-        weekly: 'Create a realistic next-7-days execution plan for my 10 AM-8 PM internship schedule. Balance DSA, revision, job applications, project improvement, referrals, mock prep, and rest.',
-        dsa: 'Analyze my DSA tracker and tell me which topics to focus on next. Give a concise June-August style plan with daily and Sunday blocks.',
-        jobs: 'Analyze my job application tracker and suggest a paid remote internship strategy. Include follow-ups, platforms, and what skills to highlight.',
-        review: 'Run a monthly review from my tracker data. Tell me what is on track, what is behind, and the top 5 actions for next week.'
+        weekly: 'Create my next 7-day execution plan. Respect my 10 AM-8 PM internship, Mon-Sat. Give exact daily blocks, minimum viable tasks for low-energy days, and a Sunday deep-work plan.',
+        dsa: 'Analyze my DSA and sheet progress. Pick the next 10 problems/topics I should do, explain why, and give a 7-day schedule with revision built in.',
+        jobs: 'Analyze my job applications and skills. Build a paid remote internship application sprint: target roles, follow-ups due, resume positioning, and exact outreach priorities.',
+        review: 'Run a monthly review. Score DSA, jobs, sheets, contests, mocks, referrals, projects, and health. Tell me what is behind and the top 5 corrections for next week.',
+        mock: 'Prepare me for a mock interview this Sunday. Pick likely DSA patterns from my weak areas, give a 90-minute practice plan, and include 5 behavioural questions in STAR format.',
+        burnout: 'Audit my workload and burnout risk. Keep the plan ambitious but sustainable. Tell me what to cut, what to protect, and the minimum plan for a bad week.'
       };
+      const modeByPrompt = { weekly: 'execution', dsa: 'dsa', jobs: 'career', review: 'review', mock: 'dsa', burnout: 'strict' };
+      byId('aiCoachMode').value = modeByPrompt[type] || 'execution';
+      state.settings.aiCoachMode = byId('aiCoachMode').value;
+      save();
       byId('aiPrompt').value = prompts[type] || prompts.weekly;
       openTab('ai');
     };
@@ -1300,31 +1321,67 @@
       const diff = countBy(state.problems, 'difficulty');
       const topic = countBy(state.problems, 'topic');
       const jobStatus = countBy(jobs, 'status');
-      const dueRevisions = state.problems.filter(p => getNextDue(p) <= today()).length;
-      const followUps = getFollowUpJobs().length;
+      const dueRevisionItems = state.problems.filter(p => getNextDue(p) <= today()).slice(0, 12).map(p => ({ number: p.number, name: p.name, topic: p.topic, difficulty: p.difficulty, flag: p.flag }));
+      const followUpItems = getFollowUpJobs().slice(0, 10).map(j => ({ title: j.title, company: j.company, status: j.status, applicationDate: j.applicationDate, skills: j.skills || [] }));
       const health = getHealthSignal();
+      const sheetDoneIds = Object.entries(state.sheetProgress || {}).filter(([, done]) => done).map(([id]) => id);
+      const sheetStats = ['NeetCode 150', 'Striver SDE Sheet'].reduce((acc, sheet) => {
+        const list = sheetProblems.filter(p => p.sheet === sheet);
+        const done = list.filter(p => state.sheetProgress[p.id]).length;
+        acc[sheet] = { done, totalInApp: list.length, percent: list.length ? Math.round((done / list.length) * 100) : 0 };
+        return acc;
+      }, {});
+      const weakTopics = topics
+        .map(t => ({
+          topic: t,
+          solved: topic[t] || 0,
+          sheetPending: sheetProblems.filter(p => p.topic === t && !state.sheetProgress[p.id]).length
+        }))
+        .sort((a, b) => (a.solved - b.solved) || (b.sheetPending - a.sheetPending))
+        .slice(0, 6);
+      const recentProblems = [...state.problems].sort((a, b) => b.dateSolved.localeCompare(a.dateSolved)).slice(0, 10).map(p => ({ number: p.number, name: p.name, topic: p.topic, difficulty: p.difficulty, flag: p.flag, dateSolved: p.dateSolved }));
+      const deadline = new Date('2026-08-31T00:00:00');
+      const daysLeft = Math.max(0, Math.ceil((deadline - new Date()) / 86400000));
+      const goal = Number(state.settings.goal) || 300;
       return {
         date: today(),
+        coachMode: byId('aiCoachMode')?.value || state.settings.aiCoachMode || 'execution',
         dsa: {
           totalSolved: state.problems.length,
-          goal: state.settings.goal,
+          goal,
+          daysLeft,
+          requiredPerDay: daysLeft ? Number((Math.max(0, goal - state.problems.length) / daysLeft).toFixed(2)) : 0,
           difficulty: diff,
           topics: topic,
-          dueRevisions
+          weakTopics,
+          recentProblems,
+          dueRevisions: dueRevisionItems.length,
+          dueRevisionItems
+        },
+        sheets: {
+          stats: sheetStats,
+          doneCount: sheetDoneIds.length,
+          totalInApp: sheetProblems.length,
+          nextPending: sheetProblems.filter(p => !state.sheetProgress[p.id]).slice(0, 12).map(p => ({ sheet: p.sheet, number: p.number, name: p.name, topic: p.topic, difficulty: p.difficulty }))
         },
         jobs: {
           total: jobs.length,
           status: jobStatus,
-          followUpsDue: followUps,
+          followUpsDue: followUpItems.length,
+          followUpItems,
           recentSkills: [...new Set(jobs.flatMap(j => j.skills || []))].slice(0, 20)
         },
         planner: {
           referrals: state.planner.referrals.length,
+          recentReferrals: state.planner.referrals.slice(0, 6).map(r => ({ name: r.name, company: r.company, status: r.status, date: r.date })),
           mocks: state.planner.mocks.length,
+          recentMocks: state.planner.mocks.slice(0, 4).map(m => ({ date: m.date, type: m.type, score: m.score, improve: m.improve })),
           healthSignal: health
         },
         constraints: {
           internship: '10 AM to 8 PM, Monday to Saturday',
+          availableWeeknights: '60-90 minutes after 8 PM',
+          sundayCapacity: '6-7 hours in focused blocks',
           deadline: 'August 31, 2026',
           goals: ['300-400 DSA problems', 'paid remote internships', 'hackathons', 'project improvements', 'placements']
         }
@@ -1334,12 +1391,14 @@
     async function runAiCoach() {
       const apiKey = localStorage.getItem('openrouterApiKey');
       const model = byId('openrouterModel').value.trim() || state.settings.openrouterModel || 'openrouter/auto';
+      const mode = byId('aiCoachMode').value || 'execution';
       const prompt = byId('aiPrompt').value.trim();
       if (!prompt) {
         notify('Write a prompt or choose a quick prompt.', 'warn');
         return;
       }
       state.settings.openrouterModel = model;
+      state.settings.aiCoachMode = mode;
       save();
       byId('aiOutput').textContent = 'Thinking...';
       byId('runAiBtn').disabled = true;
@@ -1356,14 +1415,14 @@
               },
               body: JSON.stringify({
                 model,
-                messages: makeAiMessages(context, prompt),
+                messages: makeAiMessages(context, prompt, mode),
                 temperature: 0.4
               })
             })
           : await fetch('/api/ai-coach', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ model, context, prompt })
+              body: JSON.stringify({ model, context, prompt, mode })
             });
         const data = await res.json();
         if (!res.ok) throw new Error(data?.error?.message || data?.message || 'OpenRouter request failed');
@@ -1377,17 +1436,54 @@
       }
     }
 
-    function makeAiMessages(context, prompt) {
+    function makeAiMessages(context, prompt, mode = 'execution') {
+      const modeInstructions = {
+        execution: 'Focus on calendar realism, sequence, time boxing, minimum viable actions, and next 7 days.',
+        dsa: 'Focus on pattern recognition, sheet order, weak topics, revision, and problem selection. Be specific about problem names.',
+        career: 'Focus on paid remote internship strategy, role targeting, follow-ups, skills positioning, and referral/outreach copy.',
+        review: 'Act like a monthly performance reviewer. Score each area, identify drift, and prescribe corrections.',
+        strict: 'Be direct. Protect sleep and sustainability while cutting low-ROI work. Call out overcommitment.'
+      };
       return [
         {
           role: 'system',
-          content: 'You are a concise execution coach for a CS student. Give practical, time-aware plans. Avoid fluff. Use the tracker context and return clear bullets.'
+          content: `You are an elite execution coach for a 3rd-year CS student targeting placements, paid remote internships, DSA growth, hackathons, and strong projects.
+
+Non-negotiables:
+- Use only the tracker context and the user's request. If data is missing, say what to log next.
+- Respect the 10 AM-8 PM internship constraint and do not overload weeknights.
+- Prefer concrete next actions over motivation.
+- Include revision, follow-ups, and recovery when relevant.
+- Do not invent solved counts, companies, or contest results.
+
+Coach mode: ${mode}. ${modeInstructions[mode] || modeInstructions.execution}
+
+Response format:
+1. Verdict: 2-3 lines on current state.
+2. Priority Stack: top 3 priorities in order.
+3. Exact Plan: day-by-day or step-by-step actions with time boxes.
+4. Risks: what can derail the plan and how to prevent it.
+5. Next 5 Actions: checklist for the next 24-48 hours.`
         },
         {
           role: 'user',
-          content: `Tracker context:\n${JSON.stringify(context, null, 2)}\n\nUser request:\n${prompt}`
+          content: `Tracker context:\n${JSON.stringify(context, null, 2)}\n\nUser request:\n${prompt}\n\nReturn a concise but complete answer. Use bullets and tables only where they improve execution.`
         }
       ];
+    }
+
+    async function copyAiResponse() {
+      const text = byId('aiOutput').textContent.trim();
+      if (!text || text === 'AI responses will appear here.') {
+        notify('No AI response to copy yet.', 'warn');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        notify('AI response copied.');
+      } catch {
+        notify('Copy failed in this browser.', 'error');
+      }
     }
 
     function exportAll() {
