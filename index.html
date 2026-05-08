@@ -85,6 +85,7 @@
       <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="planner"><i class="fa-solid fa-calendar-check mr-2"></i>Planner</button>
       <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="ai"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i>AI Coach</button>
       <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="sheets"><i class="fa-solid fa-layer-group mr-2"></i>Sheets</button>
+      <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="resume"><i class="fa-solid fa-file-lines mr-2"></i>Resume</button>
     </nav>
 
     <main class="mt-5">
@@ -447,6 +448,61 @@
           </div>
         </div>
       </section>
+
+      <section id="resume" class="tab-panel">
+        <div class="grid gap-4 xl:grid-cols-[420px_1fr]">
+          <div class="space-y-4">
+            <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Resume Source</h2>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Upload a PDF/TXT or paste resume text. It stays in this browser unless you export your data.</p>
+              <div class="mt-4 grid gap-3">
+                <input id="resumeFile" type="file" accept=".pdf,.txt,.md" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                <textarea id="resumeText" rows="12" placeholder="Paste your master resume here..." class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"></textarea>
+                <div class="flex flex-wrap gap-2">
+                  <button id="saveResumeBtn" class="rounded-md bg-brand px-3 py-2 font-semibold text-white" type="button"><i class="fa-solid fa-floppy-disk mr-2"></i>Save Resume</button>
+                  <button id="clearResumeBtn" class="rounded-md border border-slate-300 px-3 py-2 font-semibold dark:border-line" type="button">Clear</button>
+                </div>
+              </div>
+              <p id="resumeStatus" class="mt-3 text-sm text-slate-600 dark:text-slate-400"></p>
+            </div>
+
+            <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Job Description</h2>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Paste a JD. AI will tailor your resume, identify keyword gaps, and estimate ATS fit.</p>
+              <textarea id="resumeJobDesc" rows="12" placeholder="Paste job description and requirements..." class="mt-4 w-full rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"></textarea>
+              <button id="tailorResumeBtn" class="mt-3 rounded-md bg-mint px-3 py-2 font-semibold text-white" type="button"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Tailor + Score</button>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 class="text-xl font-bold">ATS Confidence</h2>
+                  <p class="text-sm text-slate-600 dark:text-slate-400">Heuristic score plus AI critique. Use it as guidance, not a guarantee.</p>
+                </div>
+                <div class="text-right">
+                  <p id="atsScore" class="text-4xl font-bold text-brand">--</p>
+                  <p id="atsLabel" class="text-sm text-slate-500">No JD scored</p>
+                </div>
+              </div>
+              <div class="mt-4 h-3 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"><div id="atsBar" class="h-full bg-brand" style="width:0%"></div></div>
+              <div id="atsBreakdown" class="mt-4 grid gap-3 md:grid-cols-2"></div>
+            </div>
+
+            <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div><h2 class="text-xl font-bold">Tailored Resume Draft</h2><p class="text-sm text-slate-600 dark:text-slate-400">Copy or download this draft, then review manually before applying.</p></div>
+                <div class="flex flex-wrap gap-2">
+                  <button id="copyResumeDraftBtn" class="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold dark:border-line" type="button"><i class="fa-solid fa-copy mr-2"></i>Copy</button>
+                  <button id="downloadResumeDraftBtn" class="rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white" type="button"><i class="fa-solid fa-download mr-2"></i>Download</button>
+                </div>
+              </div>
+              <textarea id="resumeDraft" rows="20" placeholder="AI tailored resume will appear here..." class="mt-4 w-full rounded-md border border-slate-300 bg-white px-3 py-2 font-mono text-sm dark:border-line dark:bg-ink"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -512,6 +568,12 @@
           health: []
         },
         sheetProgress: {},
+        resume: {
+          text: '',
+          draft: '',
+          lastScore: null,
+          lastJobDescription: ''
+        },
         settings: { goal: 300, theme: 'dark', leetcodeUsername: '', openrouterModel: 'openrouter/auto', aiCoachMode: 'execution' },
         leetcodeStats: null,
         hackathons: generateMockHackathons()
@@ -527,7 +589,8 @@
           ...(saved || {}),
           settings: { ...defaults.settings, ...(saved?.settings || {}) },
           planner: { ...defaults.planner, ...(saved?.planner || {}) },
-          sheetProgress: { ...defaults.sheetProgress, ...(saved?.sheetProgress || {}) }
+          sheetProgress: { ...defaults.sheetProgress, ...(saved?.sheetProgress || {}) },
+          resume: { ...defaults.resume, ...(saved?.resume || {}) }
         };
       } catch { return defaultState(); }
     }
@@ -554,6 +617,11 @@
       byId('leetcodeUsername').value = state.settings.leetcodeUsername || '';
       byId('openrouterModel').value = state.settings.openrouterModel || 'openrouter/auto';
       byId('aiCoachMode').value = state.settings.aiCoachMode || 'execution';
+      byId('resumeText').value = state.resume.text || '';
+      byId('resumeDraft').value = state.resume.draft || '';
+      byId('resumeJobDesc').value = state.resume.lastJobDescription || '';
+      updateResumeStatus();
+      renderAtsScore(state.resume.lastScore);
       byId('openrouterStatus').textContent = localStorage.getItem('openrouterApiKey') ? 'Local OpenRouter key is saved for this browser.' : 'Vercel mode uses OPENROUTER_API_KEY. Local key is optional.';
       document.documentElement.classList.toggle('dark', state.settings.theme !== 'light');
       document.documentElement.classList.toggle('light', state.settings.theme === 'light');
@@ -589,6 +657,12 @@
       byId('sheetFilter').addEventListener('change', renderSheets);
       byId('sheetTopicFilter').addEventListener('change', renderSheets);
       byId('sheetStatusFilter').addEventListener('change', renderSheets);
+      byId('resumeFile').addEventListener('change', importResumeFile);
+      byId('saveResumeBtn').addEventListener('click', saveResumeSource);
+      byId('clearResumeBtn').addEventListener('click', clearResumeSource);
+      byId('tailorResumeBtn').addEventListener('click', tailorResume);
+      byId('copyResumeDraftBtn').addEventListener('click', copyResumeDraft);
+      byId('downloadResumeDraftBtn').addEventListener('click', downloadResumeDraft);
       byId('exportAllBtn').addEventListener('click', exportAll);
       byId('importAllInput').addEventListener('change', importAll);
       byId('resetAllBtn').addEventListener('click', resetAll);
@@ -1486,6 +1560,240 @@ Response format:
       }
     }
 
+    async function importResumeFile(e) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        let text = '';
+        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+          text = await extractPdfText(file);
+        } else {
+          text = await file.text();
+        }
+        byId('resumeText').value = cleanResumeText(text);
+        notify('Resume file imported. Review and save it.');
+      } catch (err) {
+        notify(`Resume import failed: ${err.message}`, 'error');
+      }
+    }
+
+    async function extractPdfText(file) {
+      const pdfjs = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
+      pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+      const buffer = await file.arrayBuffer();
+      const pdf = await pdfjs.getDocument({ data: buffer }).promise;
+      const pages = [];
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum += 1) {
+        const page = await pdf.getPage(pageNum);
+        const content = await page.getTextContent();
+        pages.push(content.items.map(item => item.str).join(' '));
+      }
+      return pages.join('\n\n');
+    }
+
+    function saveResumeSource() {
+      state.resume.text = cleanResumeText(byId('resumeText').value);
+      byId('resumeText').value = state.resume.text;
+      save();
+      updateResumeStatus();
+      notify('Resume saved locally.');
+    }
+
+    function clearResumeSource() {
+      if (!confirm('Clear saved resume text and tailored draft from this browser?')) return;
+      state.resume = { text: '', draft: '', lastScore: null, lastJobDescription: '' };
+      byId('resumeText').value = '';
+      byId('resumeDraft').value = '';
+      byId('resumeJobDesc').value = '';
+      save();
+      updateResumeStatus();
+      renderAtsScore(null);
+      notify('Resume data cleared.');
+    }
+
+    function updateResumeStatus() {
+      const words = (state.resume.text || '').split(/\s+/).filter(Boolean).length;
+      byId('resumeStatus').textContent = words ? `Saved resume: ${words} words. Keep a master version here and tailor per job.` : 'No resume saved yet. Upload your PDF or paste text.';
+    }
+
+    function cleanResumeText(text) {
+      return String(text || '').replace(/\u0000/g, '').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+    }
+
+    async function tailorResume() {
+      const resumeText = cleanResumeText(byId('resumeText').value || state.resume.text);
+      const jobDescription = byId('resumeJobDesc').value.trim();
+      if (!resumeText) {
+        notify('Add or upload your resume first.', 'warn');
+        return;
+      }
+      if (!jobDescription) {
+        notify('Paste a job description first.', 'warn');
+        return;
+      }
+
+      state.resume.text = resumeText;
+      state.resume.lastJobDescription = jobDescription;
+      const heuristic = scoreResumeAgainstJob(resumeText, jobDescription);
+      renderAtsScore(heuristic);
+      byId('resumeDraft').value = 'Tailoring resume with AI...';
+      byId('tailorResumeBtn').disabled = true;
+      save();
+
+      try {
+        const prompt = `Tailor this resume for the job description. Return:
+1. ATS Confidence Score: number /100 with a short reason.
+2. Keyword Gaps: missing or weak keywords.
+3. Tailored Resume Draft: ATS-friendly plain text resume, preserving only truthful experience from the original resume.
+4. Bullet Improvements: 5 rewritten bullets with stronger action + impact.
+5. Final Checklist: exact edits before applying.
+
+Original resume:
+${resumeText}
+
+Job description:
+${jobDescription}
+
+Important rules:
+- Do not fabricate companies, degrees, dates, projects, metrics, or skills.
+- If a requirement is missing, mark it as a gap instead of inventing it.
+- Keep the draft concise, ATS-readable, and single-column friendly.`;
+        const result = await callAiForResume(prompt, {
+          resumeWordCount: resumeText.split(/\s+/).filter(Boolean).length,
+          jobKeywords: heuristic.requiredKeywords.slice(0, 40),
+          missingKeywords: heuristic.missingKeywords.slice(0, 30),
+          localHeuristicScore: heuristic.score
+        });
+        byId('resumeDraft').value = result;
+        state.resume.draft = result;
+        state.resume.lastScore = heuristic;
+        save();
+        notify('Resume tailored and scored.');
+      } catch (err) {
+        byId('resumeDraft').value = `AI tailoring failed: ${err.message}\n\nLocal ATS heuristic still ran. Set OPENROUTER_API_KEY in Vercel or save a local OpenRouter key in AI Coach.`;
+        state.resume.lastScore = heuristic;
+        save();
+        notify('AI tailoring failed. Heuristic score shown.', 'error');
+      } finally {
+        byId('tailorResumeBtn').disabled = false;
+      }
+    }
+
+    async function callAiForResume(prompt, resumeContext) {
+      const apiKey = localStorage.getItem('openrouterApiKey');
+      const model = byId('openrouterModel').value.trim() || state.settings.openrouterModel || 'openrouter/auto';
+      const context = {
+        date: today(),
+        mode: 'resume-tailoring',
+        resume: resumeContext,
+        tracker: buildAiContext()
+      };
+      const res = apiKey
+        ? await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+              'HTTP-Referer': location.origin,
+              'X-Title': 'DSA Grind Tracker'
+            },
+            body: JSON.stringify({
+              model,
+              messages: makeAiMessages(context, prompt, 'career'),
+              temperature: 0.25
+            })
+          })
+        : await fetch('/api/ai-coach', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model, context, prompt, mode: 'career' })
+          });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message || data?.message || 'AI resume request failed');
+      return data.reply || data.choices?.[0]?.message?.content || 'No resume response returned.';
+    }
+
+    function scoreResumeAgainstJob(resumeText, jobDescription) {
+      const resume = resumeText.toLowerCase();
+      const jd = jobDescription.toLowerCase();
+      const skillBank = [
+        'javascript', 'typescript', 'python', 'java', 'c++', 'c#', 'go', 'rust', 'sql', 'html', 'css',
+        'react', 'next.js', 'node.js', 'express', 'django', 'flask', 'spring', 'tailwind', 'mongodb',
+        'postgresql', 'mysql', 'redis', 'aws', 'azure', 'gcp', 'docker', 'kubernetes', 'git', 'github',
+        'rest', 'graphql', 'machine learning', 'deep learning', 'llm', 'openai', 'langchain', 'tensorflow',
+        'pytorch', 'pandas', 'numpy', 'data structures', 'algorithms', 'leetcode', 'vercel', 'firebase'
+      ];
+      const requiredKeywords = [...new Set(skillBank.filter(k => jd.includes(k)))];
+      const matchedKeywords = requiredKeywords.filter(k => resume.includes(k));
+      const missingKeywords = requiredKeywords.filter(k => !resume.includes(k));
+      const titleTerms = (jobDescription.match(/\b(frontend|backend|full stack|software|ai|ml|data|devops|intern|engineer|developer)\b/gi) || []).map(t => t.toLowerCase());
+      const titleMatches = [...new Set(titleTerms)].filter(t => resume.includes(t));
+      const hasMetrics = /\b\d+%|\b\d+\+|\b\d+\s?(users|requests|ms|seconds|projects|apis|models|hours)\b/i.test(resumeText);
+      const hasProjects = /project|built|developed|implemented|deployed|github|vercel|api/i.test(resumeText);
+      const hasEducation = /education|university|college|b\.?tech|bachelor|computer science/i.test(resumeText);
+      const keywordScore = requiredKeywords.length ? (matchedKeywords.length / requiredKeywords.length) * 55 : 35;
+      const titleScore = titleTerms.length ? (titleMatches.length / new Set(titleTerms).size) * 15 : 10;
+      const structureScore = (hasProjects ? 10 : 0) + (hasMetrics ? 10 : 0) + (hasEducation ? 10 : 0);
+      const lengthScore = resumeText.length > 1200 && resumeText.length < 7000 ? 10 : 5;
+      const score = Math.min(98, Math.round(keywordScore + titleScore + structureScore + lengthScore));
+      return {
+        score,
+        label: score >= 85 ? 'Strong Match' : score >= 70 ? 'Good Match' : score >= 55 ? 'Needs Tailoring' : 'Low Match',
+        matchedKeywords,
+        missingKeywords,
+        requiredKeywords,
+        checks: {
+          metrics: hasMetrics,
+          projects: hasProjects,
+          education: hasEducation,
+          atsLength: lengthScore === 10
+        }
+      };
+    }
+
+    function renderAtsScore(scoreData) {
+      const data = scoreData || { score: 0, label: 'No JD scored', matchedKeywords: [], missingKeywords: [], checks: {} };
+      byId('atsScore').textContent = scoreData ? `${data.score}` : '--';
+      byId('atsLabel').textContent = data.label || 'No JD scored';
+      byId('atsBar').style.width = `${data.score || 0}%`;
+      byId('atsBreakdown').innerHTML = scoreData ? [
+        ['Matched Keywords', data.matchedKeywords.length ? data.matchedKeywords.slice(0, 12).join(', ') : 'No tracked keywords matched yet.'],
+        ['Missing Keywords', data.missingKeywords.length ? data.missingKeywords.slice(0, 12).join(', ') : 'No obvious keyword gaps from tracked bank.'],
+        ['Resume Signals', `Projects: ${data.checks.projects ? 'yes' : 'no'} | Metrics: ${data.checks.metrics ? 'yes' : 'no'} | Education: ${data.checks.education ? 'yes' : 'no'}`],
+        ['ATS Note', 'Score is a heuristic. Final hiring fit depends on recruiter screen, role context, and truthful tailoring.']
+      ].map(([title, body]) => `<div class="rounded-lg border border-slate-300 p-3 dark:border-line"><p class="font-semibold">${title}</p><p class="mt-1 text-sm text-slate-600 dark:text-slate-400">${escapeHtml(body)}</p></div>`).join('') : '';
+    }
+
+    async function copyResumeDraft() {
+      const text = byId('resumeDraft').value.trim();
+      if (!text) {
+        notify('No resume draft to copy yet.', 'warn');
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        notify('Resume draft copied.');
+      } catch {
+        notify('Copy failed in this browser.', 'error');
+      }
+    }
+
+    function downloadResumeDraft() {
+      const text = byId('resumeDraft').value.trim();
+      if (!text) {
+        notify('No resume draft to download yet.', 'warn');
+        return;
+      }
+      const blob = new Blob([text], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `tailored-resume-${today()}.md`;
+      a.click();
+      URL.revokeObjectURL(url);
+      notify('Tailored resume downloaded.');
+    }
+
     function exportAll() {
       downloadJson('dsa-grind-backup.json', { ...state, jobApplications: jobs, exportedAt: new Date().toISOString() });
     }
@@ -1503,7 +1811,8 @@ Response format:
             ...data,
             settings: { ...defaults.settings, ...(data.settings || {}) },
             planner: { ...defaults.planner, ...(data.planner || {}) },
-            sheetProgress: { ...defaults.sheetProgress, ...(data.sheetProgress || {}) }
+            sheetProgress: { ...defaults.sheetProgress, ...(data.sheetProgress || {}) },
+            resume: { ...defaults.resume, ...(data.resume || {}) }
           };
           jobs = data.jobApplications || data.jobs || [];
           save();
