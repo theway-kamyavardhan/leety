@@ -71,6 +71,24 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (url.pathname === '/api/hackathons') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      source: 'local-fallback',
+      note: 'Local server fallback. Vercel uses api/hackathons.js for Devpost RSS.',
+      hackathons: [
+        ['AI Agents Build Week', 'Devpost', 'Online', '$10,000', 'https://devpost.com/hackathons'],
+        ['FinTech Innovation Sprint', 'Devfolio', 'Hybrid', 'INR 5,00,000', 'https://devfolio.co/hackathons'],
+        ['Campus Code Clash', 'Unstop', 'Online', 'INR 2,50,000', 'https://unstop.com/hackathons']
+      ].map((h, index) => {
+        const date = new Date();
+        date.setDate(date.getDate() + 5 + index * 4);
+        return { id: `local-${index}`, name: h[0], platform: h[1], mode: h[2], prize: h[3], link: h[4], date: date.toISOString().slice(0, 10) };
+      })
+    }));
+    return;
+  }
+
   const requested = decodeURIComponent(url.pathname);
   const safePath = path.normalize(requested).replace(/^(\.\.[/\\])+/, '');
   let filePath = path.join(root, safePath === '/' ? 'index.html' : safePath);

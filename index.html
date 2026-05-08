@@ -533,7 +533,7 @@
     const STORAGE_KEY = 'dsaProgressState';
     const JOB_KEY = 'jobApplications';
     const topics = ['Arrays', 'Strings', 'Hashing', 'Two Pointers', 'Sliding Window', 'Trees', 'Graphs', 'DP', 'Heaps', 'Binary Search', 'Other'];
-    const sheetProblems = [
+    let sheetProblems = [
       { id: 'nc-contains-duplicate', sheet: 'NeetCode 150', name: 'Contains Duplicate', number: 217, difficulty: 'Easy', topic: 'Hashing', url: 'https://leetcode.com/problems/contains-duplicate/' },
       { id: 'nc-valid-anagram', sheet: 'NeetCode 150', name: 'Valid Anagram', number: 242, difficulty: 'Easy', topic: 'Strings', url: 'https://leetcode.com/problems/valid-anagram/' },
       { id: 'nc-two-sum', sheet: 'NeetCode 150', name: 'Two Sum', number: 1, difficulty: 'Easy', topic: 'Arrays', url: 'https://leetcode.com/problems/two-sum/' },
@@ -629,6 +629,9 @@
     addSheetBatch('NeetCode 150', 'Other', [
       { name: 'Insert Interval' }, { name: 'Non-overlapping Intervals' }, { name: 'Meeting Rooms', difficulty: 'Easy' }, { name: 'Meeting Rooms II' }, { name: 'Minimum Interval to Include Each Query', difficulty: 'Hard' }, { name: 'Jump Game' }, { name: 'Jump Game II' }, { name: 'Gas Station' }, { name: 'Hand of Straights' }, { name: 'Merge Triplets to Form Target Triplet' }, { name: 'Partition Labels' }, { name: 'Valid Parenthesis String' }, { name: 'Rotate Image' }, { name: 'Spiral Matrix' }, { name: 'Happy Number', difficulty: 'Easy' }, { name: 'Plus One', difficulty: 'Easy' }, { name: 'Multiply Strings' }, { name: 'Detect Squares' }, { name: 'Single Number', difficulty: 'Easy' }, { name: 'Number of 1 Bits', difficulty: 'Easy' }, { name: 'Counting Bits', difficulty: 'Easy' }, { name: 'Reverse Bits', difficulty: 'Easy' }, { name: 'Missing Number', difficulty: 'Easy' }, { name: 'Sum of Two Integers' }, { name: 'Reverse Integer' }
     ]);
+    addSheetBatch('NeetCode 150', 'Other', [
+      { name: 'Reverse Linked List', difficulty: 'Easy' }, { name: 'Linked List Cycle', difficulty: 'Easy' }, { name: 'Find the Duplicate Number' }, { name: 'LRU Cache' }, { name: 'Merge k Sorted Lists', difficulty: 'Hard' }, { name: 'Serialize and Deserialize Binary Tree', difficulty: 'Hard' }, { name: 'Kth Largest Element in an Array' }, { name: 'Word Ladder', difficulty: 'Hard' }, { name: 'Merge Intervals' }, { name: 'Maximum Subarray' }, { name: 'Set Matrix Zeroes' }, { name: 'Pow(x, n)' }
+    ]);
 
     addSheetBatch('Striver SDE Sheet', 'Other', [
       { name: 'N meetings in one room' }, { name: 'Minimum Platforms' }, { name: 'Job Sequencing Problem' }, { name: 'Fractional Knapsack' }, { name: 'Greedy Algorithm to Find Minimum Number of Coins' }, { name: 'Activity Selection' }, { name: 'Subset Sums' }, { name: 'M-Coloring Problem' }, { name: 'Rat in a Maze' }, { name: 'Sudoku Solver', difficulty: 'Hard' }, { name: 'Count Inversions', difficulty: 'Hard' }, { name: 'Reverse Pairs', difficulty: 'Hard' }, { name: 'Aggressive Cows' }, { name: 'Allocate Books' }, { name: 'Painter Partition Problem' }, { name: 'Median of Two Sorted Arrays', difficulty: 'Hard' }, { name: 'Kth Element of Two Sorted Arrays' }, { name: 'Flattening a Linked List' }, { name: 'Rotate a Linked List' }, { name: 'Clone Linked List with Random Pointer' }, { name: 'Intersection of Two Linked Lists' }, { name: 'Palindrome Linked List' }, { name: 'Starting Point of Loop in Linked List' }, { name: 'Reverse Nodes in k-Group', difficulty: 'Hard' }, { name: 'The Celebrity Problem' }, { name: 'Maximum of Minimum for Every Window Size' }, { name: 'Implement Min Stack' }, { name: 'Rotten Oranges' }, { name: 'Flood Fill' }, { name: 'Bipartite Graph' }, { name: 'Detect Cycle in Directed Graph' }, { name: 'Topological Sort' }, { name: 'Dijkstra Algorithm' }, { name: 'Bellman Ford Algorithm' }, { name: 'Floyd Warshall Algorithm' }, { name: 'Minimum Spanning Tree' }, { name: 'Disjoint Set Union' }, { name: 'Strongly Connected Components', difficulty: 'Hard' }, { name: 'Maximum Product Subarray' }, { name: 'Longest Increasing Subsequence' }, { name: 'Longest Common Subsequence' }, { name: '0/1 Knapsack' }, { name: 'Edit Distance' }, { name: 'Matrix Chain Multiplication', difficulty: 'Hard' }, { name: 'Palindrome Partitioning II', difficulty: 'Hard' }
@@ -707,7 +710,8 @@
       localStorage.setItem(JOB_KEY, JSON.stringify(jobs));
     }
 
-    function init() {
+    async function init() {
+      await loadSheetDataset();
       byId('problemTopic').innerHTML = topics.map(t => `<option>${t}</option>`).join('');
       byId('sheetTopicFilter').innerHTML = '<option value="All">All topics</option>' + topics.map(t => `<option>${t}</option>`).join('');
       byId('problemDate').value = today();
@@ -731,6 +735,18 @@
       updateThemeButton();
       bindEvents();
       renderAll();
+    }
+
+    async function loadSheetDataset() {
+      try {
+        const res = await fetch('/data/sheets.json', { cache: 'no-store' });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!Array.isArray(data.problems) || !data.problems.length) throw new Error('Invalid sheet data');
+        sheetProblems = data.problems;
+      } catch (err) {
+        console.warn('Using embedded sheet fallback:', err.message);
+      }
     }
 
     function bindEvents() {
@@ -1026,28 +1042,18 @@
     }
 
     async function refreshHackathons() {
-      byId('hackathonStatus').textContent = 'Trying public Devpost RSS via CORS helper...';
+      byId('hackathonStatus').textContent = 'Trying Vercel serverless hackathon feed...';
       try {
-        const url = encodeURIComponent('https://devpost.com/events/upcoming.rss');
-        const res = await fetch(`https://api.allorigins.win/raw?url=${url}`);
+        const res = await fetch('/api/hackathons');
         if (!res.ok) throw new Error('Feed unavailable');
-        const xml = new DOMParser().parseFromString(await res.text(), 'text/xml');
-        const items = [...xml.querySelectorAll('item')].slice(0, 9);
-        if (!items.length) throw new Error('No feed items');
-        state.hackathons = items.map(item => ({
-          id: uid(),
-          name: item.querySelector('title')?.textContent || 'Upcoming hackathon',
-          platform: 'Devpost',
-          date: (item.querySelector('pubDate')?.textContent ? new Date(item.querySelector('pubDate').textContent) : new Date()).toISOString().slice(0, 10),
-          mode: /online/i.test(item.textContent) ? 'Online' : 'Online/Hybrid',
-          prize: 'See listing',
-          link: item.querySelector('link')?.textContent || 'https://devpost.com/hackathons'
-        }));
-        byId('hackathonStatus').textContent = 'Loaded public feed data. Devfolio and Unstop usually require a backend proxy, so mock-compatible fields are preserved.';
+        const data = await res.json();
+        if (!Array.isArray(data.hackathons) || !data.hackathons.length) throw new Error('No feed items');
+        state.hackathons = data.hackathons;
+        byId('hackathonStatus').textContent = `Loaded ${data.source}. ${data.note || ''}`;
         notify('Hackathon feed refreshed.');
       } catch (err) {
         state.hackathons = generateMockHackathons();
-        byId('hackathonStatus').textContent = `Live feed failed (${err.message}). Showing realistic mock data.`;
+        byId('hackathonStatus').textContent = `Serverless feed failed (${err.message}). Showing realistic mock data.`;
         notify('Live feed unavailable. Mock hackathons loaded.', 'warn');
       }
       save();

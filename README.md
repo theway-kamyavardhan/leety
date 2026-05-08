@@ -56,3 +56,20 @@ The AI Coach uses `/api/ai-coach`, a Vercel serverless function, so your OpenRou
 - The Weekly Plan tab follows the May 8-August 31 schedule, detects the current week in real time, and rolls unsolved previous-week problems into the current carryover queue.
 - The FAANG Review tab prioritizes due/flagged revisions and high-frequency patterns before random hard problems.
 - Tailwind is compiled during `npm run build`; the app no longer depends on the Tailwind browser CDN.
+- Sheet data lives in `data/sheets.json` with source metadata and is validated by `npm run check`. NeetCode is enforced at 150 entries; Striver is ready for a canonical 191-problem export and currently uses a broad verified subset plus metadata.
+- Hackathon refresh uses a free Vercel serverless function at `/api/hackathons`. Devpost RSS is fetched server-side; Devfolio/Unstop can be added inside the same function if you later find stable public endpoints or acceptable scraping rules.
+
+## Free Backend Approach on Vercel
+
+You do not need a separate backend. Use Vercel Serverless Functions in the `api/` folder:
+
+- `api/ai-coach.js` hides your OpenRouter key via `OPENROUTER_API_KEY`.
+- `api/hackathons.js` fetches Devpost RSS server-side so browser CORS is not a blocker.
+- Add more providers by creating or extending files under `api/`.
+
+Free-tier pattern:
+
+1. Keep secrets in Vercel Environment Variables.
+2. Use `/api/...` routes for external APIs, RSS feeds, scraping-safe pages, and key-protected AI calls.
+3. Keep user data in `localStorage` unless you later need login/sync.
+4. If you need a free database later, use Vercel KV/Neon/Supabase free tier, but this app does not require it yet.
