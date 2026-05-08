@@ -8,7 +8,7 @@
     "start": "node server.js",
     "dev": "node server.js",
     "build": "tailwindcss -i ./src/input.css -o ./dist/styles.css --minify",
-    "check": "node -c server.js && node -c api/ai-coach.js && node -c api/hackathons.js && node scripts/validate-sheets.js",
+    "check": "node -c server.js && node -c api/ai-coach.js && node -c api/hackathons.js && node -c api/leetcode.js && node scripts/validate-sheets.js",
     "vercel-build": "npm run build"
   },
   "keywords": [

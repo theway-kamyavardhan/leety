@@ -89,6 +89,59 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (url.pathname === '/api/leetcode') {
+    const username = String(url.searchParams.get('username') || '').trim();
+    if (!username) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ message: 'username is required' }));
+      return;
+    }
+    (async () => {
+      try {
+        const response = await fetch('https://leetcode.com/graphql', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Referer: `https://leetcode.com/${encodeURIComponent(username)}/`,
+            'User-Agent': 'DSA-Grind-Tracker/1.0'
+          },
+          body: JSON.stringify({
+            query: 'query userStats($username: String!) { matchedUser(username: $username) { username submitStats: submitStatsGlobal { acSubmissionNum { difficulty count submissions } } profile { ranking reputation } contributions { points } } userContestRanking(username: $username) { attendedContestsCount rating globalRanking topPercentage } }',
+            variables: { username }
+          })
+        });
+        const payload = await response.json();
+        const user = payload?.data?.matchedUser;
+        if (!response.ok || !user) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: payload?.errors?.[0]?.message || 'LeetCode user not found' }));
+          return;
+        }
+        const counts = Object.fromEntries(user.submitStats.acSubmissionNum.map(item => [item.difficulty, item]));
+        const totalSolved = counts.All?.count || 0;
+        const totalSubmissions = counts.All?.submissions || 0;
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          username: user.username,
+          totalSolved,
+          easySolved: counts.Easy?.count || 0,
+          mediumSolved: counts.Medium?.count || 0,
+          hardSolved: counts.Hard?.count || 0,
+          acceptanceRate: totalSubmissions ? Number(((totalSolved / totalSubmissions) * 100).toFixed(2)) : 'N/A',
+          ranking: user.profile?.ranking || 'N/A',
+          contributionPoints: user.contributions?.points || 0,
+          reputation: user.profile?.reputation || 0,
+          contest: payload.data.userContestRanking || null,
+          source: 'leetcode-graphql'
+        }));
+      } catch (error) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: error.message || 'Failed to fetch LeetCode stats' }));
+      }
+    })();
+    return;
+  }
+
   const requested = decodeURIComponent(url.pathname);
   const safePath = path.normalize(requested).replace(/^(\.\.[/\\])+/, '');
   let filePath = path.join(root, safePath === '/' ? 'index.html' : safePath);

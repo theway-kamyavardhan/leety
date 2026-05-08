@@ -206,7 +206,7 @@
         <div class="grid gap-4 lg:grid-cols-[360px_1fr]">
           <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
             <h2 class="text-xl font-bold">LeetCode Profile</h2>
-            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Uses leetcode-stats-api.herokuapp.com. If it fails, the app keeps working and shows a clear note.</p>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Uses the app's Vercel `/api/leetcode` route, backed by LeetCode GraphQL. No broken public proxy needed.</p>
             <div class="mt-4 flex gap-2">
               <input id="leetcodeUsername" placeholder="Username" class="w-full rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
               <button id="fetchLeetcodeBtn" class="rounded-md bg-brand px-3 py-2 font-semibold text-white">Fetch</button>
@@ -680,7 +680,7 @@
           lastScore: null,
           lastJobDescription: ''
         },
-        settings: { goal: 300, theme: 'dark', leetcodeUsername: '', openrouterModel: 'openrouter/auto', aiCoachMode: 'execution' },
+        settings: { goal: 300, theme: 'dark', leetcodeUsername: 'thewaykamyavardhan', openrouterModel: 'openrouter/auto', aiCoachMode: 'execution' },
         leetcodeStats: null,
         hackathons: generateMockHackathons()
       };
@@ -721,7 +721,7 @@
       byId('mockDate').value = today();
       byId('healthDate').value = today();
       byId('goalInput').value = state.settings.goal;
-      byId('leetcodeUsername').value = state.settings.leetcodeUsername || '';
+      byId('leetcodeUsername').value = state.settings.leetcodeUsername || 'thewaykamyavardhan';
       byId('openrouterModel').value = state.settings.openrouterModel || 'openrouter/auto';
       byId('aiCoachMode').value = state.settings.aiCoachMode || 'execution';
       byId('resumeText').value = state.resume.text || '';
@@ -1074,15 +1074,22 @@
     }
 
     async function fetchLeetcode() {
-      const username = byId('leetcodeUsername').value.trim();
+      let username = byId('leetcodeUsername').value.trim();
       if (!username) return;
+      if (username === 'thewaykamayvardhan') {
+        username = 'thewaykamyavardhan';
+        byId('leetcodeUsername').value = username;
+        notify('Corrected username to the existing LeetCode profile.', 'warn');
+      }
       state.settings.leetcodeUsername = username;
       byId('leetcodeNote').textContent = 'Fetching LeetCode stats...';
+      byId('fetchLeetcodeBtn').disabled = true;
       try {
-        const res = await fetch(`https://leetcode-stats-api.herokuapp.com/${encodeURIComponent(username)}`);
+        const res = await fetch(`/api/leetcode?username=${encodeURIComponent(username)}`);
         const data = await res.json();
         if (!res.ok || data.status === 'error') throw new Error(data.message || 'Stats API unavailable');
         state.leetcodeStats = {
+          username: data.username || username,
           totalSolved: data.totalSolved || 0,
           easySolved: data.easySolved || 0,
           mediumSolved: data.mediumSolved || 0,
@@ -1090,14 +1097,19 @@
           acceptanceRate: data.acceptanceRate || 'N/A',
           ranking: data.ranking || 'N/A',
           contributionPoints: data.contributionPoints || 0,
+          reputation: data.reputation || 0,
+          contest: data.contest || null,
+          source: data.source || 'leetcode-graphql',
           activity: mockActivity(data.totalSolved || 0)
         };
-        byId('leetcodeNote').textContent = 'Stats loaded. Recent activity is mocked because this public API does not expose a daily activity timeline.';
+        byId('leetcodeNote').textContent = `Stats loaded for ${state.leetcodeStats.username}. Recent activity is mocked because LeetCode's public profile query does not expose a daily timeline.`;
         notify('LeetCode stats loaded.');
       } catch (err) {
         state.leetcodeStats = null;
-        byId('leetcodeNote').textContent = `Could not fetch stats: ${err.message}. Check the username or try again later.`;
+        byId('leetcodeNote').textContent = `Could not fetch stats: ${err.message}. Check the exact LeetCode username.`;
         notify('LeetCode stats API failed. Try again later.', 'warn');
+      } finally {
+        byId('fetchLeetcodeBtn').disabled = false;
       }
       save();
       renderLeetcode();
@@ -1106,7 +1118,7 @@
     function renderLeetcode() {
       const s = state.leetcodeStats;
       const stats = s ? [
-        ['Total solved', s.totalSolved], ['Easy', s.easySolved], ['Medium', s.mediumSolved], ['Hard', s.hardSolved], ['Acceptance', `${s.acceptanceRate}%`], ['Ranking', s.ranking], ['Contribution', s.contributionPoints]
+        ['Username', s.username || '-'], ['Total solved', s.totalSolved], ['Easy', s.easySolved], ['Medium', s.mediumSolved], ['Hard', s.hardSolved], ['Acceptance', s.acceptanceRate === 'N/A' ? 'N/A' : `${s.acceptanceRate}%`], ['Ranking', s.ranking], ['Contribution', s.contributionPoints], ['Contest rating', s.contest?.rating ? Math.round(s.contest.rating) : 'N/A']
       ] : [['Total solved', '-'], ['Easy', '-'], ['Medium', '-'], ['Hard', '-'], ['Acceptance', '-'], ['Ranking', '-']];
       byId('leetcodeStats').innerHTML = stats.map(([label, value]) => `<div class="rounded-lg border border-slate-300 p-4 dark:border-line"><p class="text-sm text-slate-500 dark:text-slate-400">${label}</p><p class="mt-1 text-2xl font-bold">${value}</p></div>`).join('');
       renderCharts();
