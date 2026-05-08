@@ -571,6 +571,68 @@
       { id: 'str-serialize-tree', sheet: 'Striver SDE Sheet', name: 'Serialize and Deserialize Binary Tree', number: 297, difficulty: 'Hard', topic: 'Trees', url: 'https://leetcode.com/problems/serialize-and-deserialize-binary-tree/' },
       { id: 'str-word-ladder', sheet: 'Striver SDE Sheet', name: 'Word Ladder', number: 127, difficulty: 'Hard', topic: 'Graphs', url: 'https://leetcode.com/problems/word-ladder/' }
     ];
+    function addSheetBatch(sheet, topic, items) {
+      const existing = new Set(sheetProblems.map(p => `${p.sheet}|${normalizeProblemName(p.name)}`));
+      items.forEach(item => {
+        const name = typeof item === 'string' ? item : item.name;
+        const key = `${sheet}|${normalizeProblemName(name)}`;
+        if (existing.has(key)) return;
+        existing.add(key);
+        sheetProblems.push({
+          id: `${sheet.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`,
+          sheet,
+          name,
+          number: item.number || '',
+          difficulty: item.difficulty || 'Medium',
+          topic: item.topic || topic,
+          url: item.url || `https://leetcode.com/problems/${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}/`
+        });
+      });
+    }
+
+    addSheetBatch('NeetCode 150', 'Hashing', [
+      { name: 'Valid Sudoku' }, { name: 'Encode and Decode Strings' }, { name: 'Longest Consecutive Sequence' }
+    ]);
+    addSheetBatch('NeetCode 150', 'Two Pointers', [
+      { name: 'Two Sum II - Input Array Is Sorted' }, { name: 'Trapping Rain Water', difficulty: 'Hard' }
+    ]);
+    addSheetBatch('NeetCode 150', 'Sliding Window', [
+      { name: 'Best Time to Buy and Sell Stock', difficulty: 'Easy' }, { name: 'Longest Repeating Character Replacement' }, { name: 'Permutation in String' }, { name: 'Minimum Window Substring', difficulty: 'Hard' }, { name: 'Sliding Window Maximum', difficulty: 'Hard' }
+    ]);
+    addSheetBatch('NeetCode 150', 'Other', [
+      { name: 'Min Stack' }, { name: 'Evaluate Reverse Polish Notation' }, { name: 'Generate Parentheses' }, { name: 'Daily Temperatures' }, { name: 'Car Fleet' }, { name: 'Largest Rectangle in Histogram', difficulty: 'Hard' }
+    ]);
+    addSheetBatch('NeetCode 150', 'Binary Search', [
+      { name: 'Search a 2D Matrix' }, { name: 'Koko Eating Bananas' }, { name: 'Find Minimum in Rotated Sorted Array' }, { name: 'Search in Rotated Sorted Array' }, { name: 'Time Based Key-Value Store' }, { name: 'Median of Two Sorted Arrays', difficulty: 'Hard' }
+    ]);
+    addSheetBatch('NeetCode 150', 'Other', [
+      { name: 'Merge Two Sorted Lists', difficulty: 'Easy' }, { name: 'Reorder List' }, { name: 'Remove Nth Node From End of List' }, { name: 'Copy List with Random Pointer' }, { name: 'Add Two Numbers' }, { name: 'Reverse Nodes in k-Group', difficulty: 'Hard' }
+    ]);
+    addSheetBatch('NeetCode 150', 'Trees', [
+      { name: 'Diameter of Binary Tree', difficulty: 'Easy' }, { name: 'Balanced Binary Tree', difficulty: 'Easy' }, { name: 'Same Tree', difficulty: 'Easy' }, { name: 'Subtree of Another Tree', difficulty: 'Easy' }, { name: 'Lowest Common Ancestor of a Binary Search Tree' }, { name: 'Binary Tree Level Order Traversal' }, { name: 'Binary Tree Right Side View' }, { name: 'Count Good Nodes in Binary Tree' }, { name: 'Validate Binary Search Tree' }, { name: 'Kth Smallest Element in a BST' }, { name: 'Construct Binary Tree from Preorder and Inorder Traversal' }, { name: 'Binary Tree Maximum Path Sum', difficulty: 'Hard' }
+    ]);
+    addSheetBatch('NeetCode 150', 'Other', [
+      { name: 'Implement Trie (Prefix Tree)' }, { name: 'Design Add and Search Words Data Structure' }, { name: 'Word Search II', difficulty: 'Hard' }
+    ]);
+    addSheetBatch('NeetCode 150', 'Heaps', [
+      { name: 'Kth Largest Element in a Stream', difficulty: 'Easy' }, { name: 'Last Stone Weight', difficulty: 'Easy' }, { name: 'K Closest Points to Origin' }, { name: 'Task Scheduler' }, { name: 'Design Twitter' }, { name: 'Find Median from Data Stream', difficulty: 'Hard' }
+    ]);
+    addSheetBatch('NeetCode 150', 'Other', [
+      { name: 'Subsets' }, { name: 'Combination Sum' }, { name: 'Combination Sum II' }, { name: 'Permutations' }, { name: 'Subsets II' }, { name: 'Word Search' }, { name: 'Palindrome Partitioning' }, { name: 'Letter Combinations of a Phone Number' }, { name: 'N-Queens', difficulty: 'Hard' }
+    ]);
+    addSheetBatch('NeetCode 150', 'Graphs', [
+      { name: 'Number of Islands' }, { name: 'Max Area of Island' }, { name: 'Walls and Gates' }, { name: 'Rotting Oranges' }, { name: 'Pacific Atlantic Water Flow' }, { name: 'Surrounded Regions' }, { name: 'Course Schedule II' }, { name: 'Graph Valid Tree' }, { name: 'Number of Connected Components in an Undirected Graph' }, { name: 'Redundant Connection' }, { name: 'Reconstruct Itinerary', difficulty: 'Hard' }, { name: 'Min Cost to Connect All Points' }, { name: 'Network Delay Time' }, { name: 'Swim in Rising Water', difficulty: 'Hard' }, { name: 'Alien Dictionary', difficulty: 'Hard' }, { name: 'Cheapest Flights Within K Stops' }
+    ]);
+    addSheetBatch('NeetCode 150', 'DP', [
+      { name: 'Min Cost Climbing Stairs', difficulty: 'Easy' }, { name: 'House Robber' }, { name: 'House Robber II' }, { name: 'Longest Palindromic Substring' }, { name: 'Palindromic Substrings' }, { name: 'Decode Ways' }, { name: 'Maximum Product Subarray' }, { name: 'Word Break' }, { name: 'Longest Increasing Subsequence' }, { name: 'Partition Equal Subset Sum' }, { name: 'Unique Paths' }, { name: 'Longest Common Subsequence' }, { name: 'Best Time to Buy and Sell Stock with Cooldown' }, { name: 'Coin Change II' }, { name: 'Target Sum' }, { name: 'Interleaving String' }, { name: 'Longest Increasing Path in a Matrix', difficulty: 'Hard' }, { name: 'Distinct Subsequences', difficulty: 'Hard' }, { name: 'Edit Distance' }, { name: 'Burst Balloons', difficulty: 'Hard' }, { name: 'Regular Expression Matching', difficulty: 'Hard' }
+    ]);
+    addSheetBatch('NeetCode 150', 'Other', [
+      { name: 'Insert Interval' }, { name: 'Non-overlapping Intervals' }, { name: 'Meeting Rooms', difficulty: 'Easy' }, { name: 'Meeting Rooms II' }, { name: 'Minimum Interval to Include Each Query', difficulty: 'Hard' }, { name: 'Jump Game' }, { name: 'Jump Game II' }, { name: 'Gas Station' }, { name: 'Hand of Straights' }, { name: 'Merge Triplets to Form Target Triplet' }, { name: 'Partition Labels' }, { name: 'Valid Parenthesis String' }, { name: 'Rotate Image' }, { name: 'Spiral Matrix' }, { name: 'Happy Number', difficulty: 'Easy' }, { name: 'Plus One', difficulty: 'Easy' }, { name: 'Multiply Strings' }, { name: 'Detect Squares' }, { name: 'Single Number', difficulty: 'Easy' }, { name: 'Number of 1 Bits', difficulty: 'Easy' }, { name: 'Counting Bits', difficulty: 'Easy' }, { name: 'Reverse Bits', difficulty: 'Easy' }, { name: 'Missing Number', difficulty: 'Easy' }, { name: 'Sum of Two Integers' }, { name: 'Reverse Integer' }
+    ]);
+
+    addSheetBatch('Striver SDE Sheet', 'Other', [
+      { name: 'N meetings in one room' }, { name: 'Minimum Platforms' }, { name: 'Job Sequencing Problem' }, { name: 'Fractional Knapsack' }, { name: 'Greedy Algorithm to Find Minimum Number of Coins' }, { name: 'Activity Selection' }, { name: 'Subset Sums' }, { name: 'M-Coloring Problem' }, { name: 'Rat in a Maze' }, { name: 'Sudoku Solver', difficulty: 'Hard' }, { name: 'Count Inversions', difficulty: 'Hard' }, { name: 'Reverse Pairs', difficulty: 'Hard' }, { name: 'Aggressive Cows' }, { name: 'Allocate Books' }, { name: 'Painter Partition Problem' }, { name: 'Median of Two Sorted Arrays', difficulty: 'Hard' }, { name: 'Kth Element of Two Sorted Arrays' }, { name: 'Flattening a Linked List' }, { name: 'Rotate a Linked List' }, { name: 'Clone Linked List with Random Pointer' }, { name: 'Intersection of Two Linked Lists' }, { name: 'Palindrome Linked List' }, { name: 'Starting Point of Loop in Linked List' }, { name: 'Reverse Nodes in k-Group', difficulty: 'Hard' }, { name: 'The Celebrity Problem' }, { name: 'Maximum of Minimum for Every Window Size' }, { name: 'Implement Min Stack' }, { name: 'Rotten Oranges' }, { name: 'Flood Fill' }, { name: 'Bipartite Graph' }, { name: 'Detect Cycle in Directed Graph' }, { name: 'Topological Sort' }, { name: 'Dijkstra Algorithm' }, { name: 'Bellman Ford Algorithm' }, { name: 'Floyd Warshall Algorithm' }, { name: 'Minimum Spanning Tree' }, { name: 'Disjoint Set Union' }, { name: 'Strongly Connected Components', difficulty: 'Hard' }, { name: 'Maximum Product Subarray' }, { name: 'Longest Increasing Subsequence' }, { name: 'Longest Common Subsequence' }, { name: '0/1 Knapsack' }, { name: 'Edit Distance' }, { name: 'Matrix Chain Multiplication', difficulty: 'Hard' }, { name: 'Palindrome Partitioning II', difficulty: 'Hard' }
+    ]);
     const today = () => new Date().toISOString().slice(0, 10);
     const weeklyRoadmap = [
       { week: 1, dates: 'May 8 - 14', start: '2026-05-08', end: '2026-05-14', topics: 'Arrays & Hashing (foundation)', target: '15-18', notes: 'Basics: prefix sum, hash map, set, list comprehension.', problems: ['Contains Duplicate', 'Valid Anagram', 'Two Sum', 'Group Anagrams', 'Top K Frequent Elements', 'Product of Array Except Self', 'Valid Sudoku', 'Longest Consecutive Sequence', 'Majority Element', 'Ransom Note', 'Merge Sorted Array', 'Set Matrix Zeroes', "Pascal's Triangle", 'Maximum Subarray', 'Sort Colors'] },
@@ -1127,7 +1189,7 @@
         <tr class="border-t border-slate-200 dark:border-line">
           <td class="py-3"><input type="checkbox" ${state.sheetProgress[p.id] ? 'checked' : ''} onchange="toggleSheetProblem('${p.id}', this.checked)" /></td>
           <td>${escapeHtml(p.sheet)}</td>
-          <td class="font-semibold"><a class="text-brand" href="${escapeAttr(p.url)}" target="_blank" rel="noreferrer">#${p.number} ${escapeHtml(p.name)}</a></td>
+          <td class="font-semibold"><a class="text-brand" href="${escapeAttr(p.url)}" target="_blank" rel="noreferrer">${p.number ? `#${p.number} ` : ''}${escapeHtml(p.name)}</a></td>
           <td>${badge(p.difficulty)}</td>
           <td>${escapeHtml(p.topic)}</td>
           <td class="space-x-2">
@@ -1181,7 +1243,7 @@
       if (!p) return;
       byId('problemId').value = '';
       byId('problemName').value = p.name;
-      byId('problemNumber').value = p.number;
+      byId('problemNumber').value = p.number || '';
       byId('problemDifficulty').value = p.difficulty;
       byId('problemTopic').value = p.topic;
       byId('problemDate').value = today();
