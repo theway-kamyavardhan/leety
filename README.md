@@ -4,9 +4,11 @@ A static, local-first single-page app for tracking LeetCode/DSA progress, Strive
 
 ## Run Locally
 
-Open `index.html` directly in a browser, or use the included zero-dependency static server:
+Install dependencies once, build Tailwind, then run the included zero-dependency static server:
 
 ```bash
+npm install
+npm run build
 npm start
 ```
 
@@ -23,7 +25,7 @@ Option 2: Push the folder to GitHub, import it in Vercel, and deploy with the de
 Vercel settings:
 
 - Framework preset: **Other**
-- Build command: leave empty
+- Build command: `npm run build`
 - Output directory: `.`
 - Environment variable: `OPENROUTER_API_KEY=your_fresh_openrouter_key`
 - Optional environment variable: `OPENROUTER_MODEL=openrouter/auto`
@@ -51,3 +53,6 @@ The AI Coach uses `/api/ai-coach`, a Vercel serverless function, so your OpenRou
 - The Sheets tab includes a built-in high-priority starter integration for NeetCode 150 and Striver SDE Sheet, with links back to the official/canonical sheet pages for the full lists.
 - AI Coach now supports coach modes: Execution Coach, DSA Mentor, Career Strategist, Monthly Reviewer, and Strict Accountability. It sends tracker summaries, sheet progress, weak topics, due revisions, follow-ups, mock logs, and health load into a structured prompt.
 - The Resume tab lets you upload/paste a master resume, paste a job description, generate an AI-tailored ATS-friendly draft, and view a heuristic ATS confidence score with matched/missing keywords. Resume data stays in localStorage unless you export all data.
+- The Weekly Plan tab follows the May 8-August 31 schedule, detects the current week in real time, and rolls unsolved previous-week problems into the current carryover queue.
+- The FAANG Review tab prioritizes due/flagged revisions and high-frequency patterns before random hard problems.
+- Tailwind is compiled during `npm run build`; the app no longer depends on the Tailwind browser CDN.

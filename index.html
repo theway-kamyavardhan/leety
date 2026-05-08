@@ -10,25 +10,7 @@
   <meta property="og:description" content="Track LeetCode progress, revisions, contests, hackathons, and job applications in one premium static app." />
   <meta property="og:type" content="website" />
   <link rel="manifest" href="/manifest.webmanifest" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            ink: '#0e1117',
-            panel: '#161b22',
-            line: '#30363d',
-            brand: '#2f81f7',
-            mint: '#2ea043',
-            warn: '#d29922',
-            danger: '#f85149'
-          }
-        }
-      }
-    };
-  </script>
+  <link rel="stylesheet" href="/dist/styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -86,6 +68,8 @@
       <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="ai"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i>AI Coach</button>
       <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="sheets"><i class="fa-solid fa-layer-group mr-2"></i>Sheets</button>
       <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="resume"><i class="fa-solid fa-file-lines mr-2"></i>Resume</button>
+      <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="weekly"><i class="fa-solid fa-calendar-days mr-2"></i>Weekly Plan</button>
+      <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="faang"><i class="fa-solid fa-bullseye mr-2"></i>FAANG Review</button>
     </nav>
 
     <main class="mt-5">
@@ -503,6 +487,45 @@
           </div>
         </div>
       </section>
+
+      <section id="weekly" class="tab-panel">
+        <div class="grid gap-4 xl:grid-cols-[380px_1fr]">
+          <div class="space-y-4">
+            <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">This Week Focus</h2>
+              <div id="currentWeekPlan" class="mt-4"></div>
+            </div>
+            <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Carryover Queue</h2>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Unsolved problems from previous weeks automatically roll into the current set.</p>
+              <div id="carryoverList" class="mt-4 grid gap-2"></div>
+            </div>
+          </div>
+          <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <h2 class="text-xl font-bold">16-Week DSA Roadmap</h2>
+            <div class="mt-4 overflow-x-auto">
+              <table class="w-full min-w-[980px] text-left text-sm">
+                <thead class="text-slate-500 dark:text-slate-400"><tr><th class="py-2">Week</th><th>Dates</th><th>Topic(s)</th><th>Target</th><th>Progress</th><th>Notes</th><th>Actions</th></tr></thead>
+                <tbody id="weeklyPlanTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="faang" class="tab-panel">
+        <div class="grid gap-4 xl:grid-cols-[380px_1fr]">
+          <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <h2 class="text-xl font-bold">FAANG Revision Advisor</h2>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Prioritizes frequent interview patterns, your flagged problems, and due revisions.</p>
+            <div id="faangSummary" class="mt-4 grid gap-3"></div>
+          </div>
+          <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+            <h2 class="text-xl font-bold">What To Revise Next</h2>
+            <div id="faangRevisionList" class="mt-4 grid gap-3"></div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -549,6 +572,24 @@
       { id: 'str-word-ladder', sheet: 'Striver SDE Sheet', name: 'Word Ladder', number: 127, difficulty: 'Hard', topic: 'Graphs', url: 'https://leetcode.com/problems/word-ladder/' }
     ];
     const today = () => new Date().toISOString().slice(0, 10);
+    const weeklyRoadmap = [
+      { week: 1, dates: 'May 8 - 14', start: '2026-05-08', end: '2026-05-14', topics: 'Arrays & Hashing (foundation)', target: '15-18', notes: 'Basics: prefix sum, hash map, set, list comprehension.', problems: ['Contains Duplicate', 'Valid Anagram', 'Two Sum', 'Group Anagrams', 'Top K Frequent Elements', 'Product of Array Except Self', 'Valid Sudoku', 'Longest Consecutive Sequence', 'Majority Element', 'Ransom Note', 'Merge Sorted Array', 'Set Matrix Zeroes', "Pascal's Triangle", 'Maximum Subarray', 'Sort Colors'] },
+      { week: 2, dates: 'May 15 - 21', start: '2026-05-15', end: '2026-05-21', topics: 'Arrays & Hashing (medium patterns)', target: '12-15', notes: 'Two-sum variants, subarray sum, product except self.', problems: ['Subarray Sum Equals K', 'Encode and Decode Strings', 'Find the Duplicate Number', 'Next Permutation', 'Merge Intervals', 'Insert Interval', 'Non-overlapping Intervals', 'Maximum Product Subarray', 'Longest Consecutive Sequence', 'Valid Sudoku', 'LRU Cache', 'Kth Largest Element in an Array'] },
+      { week: 3, dates: 'May 22 - 28', start: '2026-05-22', end: '2026-05-28', topics: 'Two Pointers', target: '10-12', notes: 'Palindrome, container with most water, 3Sum.', problems: ['Valid Palindrome', 'Two Sum II - Input Array Is Sorted', '3Sum', 'Container With Most Water', 'Trapping Rain Water', 'Linked List Cycle', 'Remove Nth Node From End of List', 'Sort Colors', 'Merge Sorted Array', 'Palindrome Linked List'] },
+      { week: 4, dates: 'May 29 - June 4', start: '2026-05-29', end: '2026-06-04', topics: 'Sliding Window', target: '10-12', notes: 'Fixed + variable length, substring problems.', problems: ['Best Time to Buy and Sell Stock', 'Longest Substring Without Repeating Characters', 'Longest Repeating Character Replacement', 'Permutation in String', 'Minimum Window Substring', 'Sliding Window Maximum', 'Find All Anagrams in a String', 'Minimum Size Subarray Sum', 'Fruit Into Baskets', 'Maximum Average Subarray I'] },
+      { week: 5, dates: 'June 5 - 11', start: '2026-06-05', end: '2026-06-11', topics: 'Binary Search', target: '8-10', notes: 'Standard, search 2D, find min in rotated.', problems: ['Binary Search', 'Search a 2D Matrix', 'Koko Eating Bananas', 'Find Minimum in Rotated Sorted Array', 'Search in Rotated Sorted Array', 'Time Based Key-Value Store', 'Median of Two Sorted Arrays', 'Pow(x, n)', 'Find Peak Element'] },
+      { week: 6, dates: 'June 12 - 18', start: '2026-06-12', end: '2026-06-18', topics: 'Stack / Queue', target: '10-12', notes: 'Valid parentheses, daily temperatures, monotonic stack.', problems: ['Valid Parentheses', 'Min Stack', 'Evaluate Reverse Polish Notation', 'Generate Parentheses', 'Daily Temperatures', 'Car Fleet', 'Largest Rectangle in Histogram', 'Implement Queue using Stacks', 'Next Greater Element I', 'Asteroid Collision'] },
+      { week: 7, dates: 'June 19 - 25', start: '2026-06-19', end: '2026-06-25', topics: 'Revision Week (topics 1-6)', target: '15 mixed', notes: 'Re-solve flagged problems + weak areas.', revision: true, problems: [] },
+      { week: 8, dates: 'June 26 - July 2', start: '2026-06-26', end: '2026-07-02', topics: 'Linked Lists', target: '10-12', notes: 'Reverse, cycle, intersection, merge.', problems: ['Reverse Linked List', 'Merge Two Sorted Lists', 'Linked List Cycle', 'Reorder List', 'Remove Nth Node From End of List', 'Copy List with Random Pointer', 'Add Two Numbers', 'Find the Duplicate Number', 'LRU Cache', 'Merge k Sorted Lists'] },
+      { week: 9, dates: 'July 3 - 9', start: '2026-07-03', end: '2026-07-09', topics: 'Trees (DFS/BFS)', target: '12-15', notes: 'Traversals, max depth, diameter, LCA.', problems: ['Invert Binary Tree', 'Maximum Depth of Binary Tree', 'Diameter of Binary Tree', 'Balanced Binary Tree', 'Same Tree', 'Subtree of Another Tree', 'Lowest Common Ancestor of a Binary Search Tree', 'Binary Tree Level Order Traversal', 'Binary Tree Right Side View', 'Count Good Nodes in Binary Tree', 'Validate Binary Search Tree', 'Kth Smallest Element in a BST'] },
+      { week: 10, dates: 'July 10 - 16', start: '2026-07-10', end: '2026-07-16', topics: 'BST + Heaps', target: '10-12', notes: 'BST validation, Kth smallest, top K, merge K lists.', problems: ['Validate Binary Search Tree', 'Kth Smallest Element in a BST', 'Construct Binary Tree from Preorder and Inorder Traversal', 'Binary Tree Maximum Path Sum', 'Kth Largest Element in an Array', 'Last Stone Weight', 'K Closest Points to Origin', 'Task Scheduler', 'Design Twitter', 'Merge k Sorted Lists'] },
+      { week: 11, dates: 'July 17 - 23', start: '2026-07-17', end: '2026-07-23', topics: 'Graphs (DFS, BFS, Union-Find)', target: '12-15', notes: 'Number of islands, course schedule, cycle detection.', problems: ['Number of Islands', 'Clone Graph', 'Max Area of Island', 'Pacific Atlantic Water Flow', 'Surrounded Regions', 'Rotting Oranges', 'Walls and Gates', 'Course Schedule', 'Course Schedule II', 'Redundant Connection', 'Number of Connected Components in an Undirected Graph', 'Graph Valid Tree', 'Word Ladder'] },
+      { week: 12, dates: 'July 24 - 30', start: '2026-07-24', end: '2026-07-30', topics: 'Revision Week (topics 8-11)', target: '15 mixed', notes: 'Re-solve Graphs + Trees + Heaps.', revision: true, problems: [] },
+      { week: 13, dates: 'July 31 - Aug 6', start: '2026-07-31', end: '2026-08-06', topics: 'Dynamic Programming (1D)', target: '10-12', notes: 'Climbing stairs, house robber, max subarray.', problems: ['Climbing Stairs', 'Min Cost Climbing Stairs', 'House Robber', 'House Robber II', 'Longest Palindromic Substring', 'Palindromic Substrings', 'Decode Ways', 'Coin Change', 'Maximum Product Subarray', 'Word Break', 'Longest Increasing Subsequence'] },
+      { week: 14, dates: 'Aug 7 - 13', start: '2026-08-07', end: '2026-08-13', topics: 'Dynamic Programming (2D + Knapsack)', target: '10-12', notes: 'LCS, edit distance, coin change.', problems: ['Unique Paths', 'Longest Common Subsequence', 'Best Time to Buy and Sell Stock with Cooldown', 'Coin Change II', 'Target Sum', 'Interleaving String', 'Edit Distance', 'Longest Increasing Path in a Matrix', 'Distinct Subsequences', 'Regular Expression Matching'] },
+      { week: 15, dates: 'Aug 14 - 20', start: '2026-08-14', end: '2026-08-20', topics: 'Backtracking / Strings', target: '8-10', notes: 'Subsets, permutations, palindrome partitioning.', problems: ['Subsets', 'Combination Sum', 'Permutations', 'Subsets II', 'Combination Sum II', 'Word Search', 'Palindrome Partitioning', 'Letter Combinations of a Phone Number', 'N-Queens', 'Word Break'] },
+      { week: 16, dates: 'Aug 21 - 31', start: '2026-08-21', end: '2026-08-31', topics: 'Final Revision + Mock Exam', target: '20-30', notes: 'Random hard + topic mix, timed contests.', revision: true, problems: ['Trapping Rain Water', 'Minimum Window Substring', 'Median of Two Sorted Arrays', 'Largest Rectangle in Histogram', 'Binary Tree Maximum Path Sum', 'Serialize and Deserialize Binary Tree', 'Word Ladder', 'Edit Distance', 'Regular Expression Matching', 'Merge k Sorted Lists'] }
+    ];
     const uid = () => crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
     const byId = (id) => document.getElementById(id);
     const fmt = (date) => date ? new Date(date + 'T00:00:00').toLocaleDateString() : '-';
@@ -698,6 +739,8 @@
       renderJobs();
       renderPlanner();
       renderSheets();
+      renderWeeklyPlan();
+      renderFaangReview();
     }
 
     function renderDashboard() {
@@ -1148,6 +1191,117 @@
       openTab('problems');
       notify('Problem copied into the entry form.');
     };
+
+    function getCurrentRoadmapWeek() {
+      const now = new Date(today() + 'T00:00:00');
+      return weeklyRoadmap.find(w => new Date(w.start + 'T00:00:00') <= now && now <= new Date(w.end + 'T23:59:59')) || weeklyRoadmap.find(w => now < new Date(w.start + 'T00:00:00')) || weeklyRoadmap[weeklyRoadmap.length - 1];
+    }
+
+    function isProblemSolvedName(name) {
+      const norm = normalizeProblemName(name);
+      return state.problems.some(p => normalizeProblemName(p.name) === norm);
+    }
+
+    function normalizeProblemName(name) {
+      return String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    }
+
+    function getWeekProblems(week) {
+      if (!week.revision) return week.problems;
+      const flagged = state.problems.filter(p => p.flag > 1 || getNextDue(p) <= today()).map(p => p.name);
+      return [...new Set([...flagged, ...week.problems])].slice(0, week.week === 16 ? 30 : 15);
+    }
+
+    function getCarryover(currentWeek) {
+      return weeklyRoadmap
+        .filter(w => w.week < currentWeek.week)
+        .flatMap(w => getWeekProblems(w).map(name => ({ name, fromWeek: w.week, topic: w.topics })))
+        .filter(item => !isProblemSolvedName(item.name));
+    }
+
+    function renderWeeklyPlan() {
+      const current = getCurrentRoadmapWeek();
+      const carryover = getCarryover(current);
+      const currentProblems = getWeekProblems(current).filter(name => !isProblemSolvedName(name));
+      const combined = [...carryover.map(c => c.name), ...currentProblems];
+      const solvedCurrent = getWeekProblems(current).filter(isProblemSolvedName).length;
+      const totalCurrent = Math.max(1, getWeekProblems(current).length);
+      byId('currentWeekPlan').innerHTML = `
+        <p class="text-sm text-slate-500 dark:text-slate-400">Week ${current.week} • ${current.dates}</p>
+        <h3 class="mt-1 text-2xl font-bold">${escapeHtml(current.topics)}</h3>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">${escapeHtml(current.notes)}</p>
+        <div class="mt-3 h-3 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"><div class="h-full bg-mint" style="width:${Math.round((solvedCurrent / totalCurrent) * 100)}%"></div></div>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">${solvedCurrent}/${totalCurrent} current-week problems solved. ${carryover.length} carryover item${carryover.length === 1 ? '' : 's'}.</p>
+        <div class="mt-4 grid gap-2">${combined.slice(0, 18).map(name => roadmapProblemRow(name)).join('')}</div>`;
+      byId('carryoverList').innerHTML = carryover.length ? carryover.slice(0, 20).map(c => roadmapProblemRow(c.name, `Week ${c.fromWeek}`)).join('') : '<p class="text-sm text-slate-500">No carryover. You are current.</p>';
+      byId('weeklyPlanTable').innerHTML = weeklyRoadmap.map(w => {
+        const problems = getWeekProblems(w);
+        const solved = problems.filter(isProblemSolvedName).length;
+        const pct = problems.length ? Math.round((solved / problems.length) * 100) : 0;
+        return `<tr class="border-t border-slate-200 dark:border-line ${w.week === current.week ? 'bg-blue-50 dark:bg-blue-950/30' : ''}">
+          <td class="py-3 font-semibold">Week ${w.week}</td><td>${w.dates}</td><td>${escapeHtml(w.topics)}</td><td>${w.target}</td>
+          <td><div class="h-2 w-28 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"><div class="h-full bg-brand" style="width:${pct}%"></div></div><span class="text-xs text-slate-500">${solved}/${problems.length}</span></td>
+          <td>${escapeHtml(w.notes)}</td>
+          <td><button class="text-brand" onclick="openWeekProblems(${w.week})">View</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function roadmapProblemRow(name, meta = '') {
+      const solved = isProblemSolvedName(name);
+      return `<div class="flex items-center justify-between gap-3 rounded-md border border-slate-300 p-2 text-sm dark:border-line">
+        <div><span class="${solved ? 'line-through text-slate-500' : 'font-semibold'}">${escapeHtml(name)}</span>${meta ? `<span class="ml-2 text-xs text-slate-500">${escapeHtml(meta)}</span>` : ''}</div>
+        <button class="text-brand" onclick="addRoadmapProblem(decodeURIComponent('${encodeURIComponent(name)}'))">${solved ? 'Logged' : 'Add'}</button>
+      </div>`;
+    }
+
+    window.openWeekProblems = (weekNum) => {
+      const week = weeklyRoadmap.find(w => w.week === weekNum);
+      if (!week) return;
+      byId('carryoverList').innerHTML = getWeekProblems(week).map(name => roadmapProblemRow(name, `Week ${week.week}`)).join('');
+      notify(`Week ${week.week} problems loaded in carryover panel.`);
+      openTab('weekly');
+    };
+
+    window.addRoadmapProblem = (name) => {
+      const sheet = sheetProblems.find(p => normalizeProblemName(p.name) === normalizeProblemName(name));
+      if (sheet) return addSheetToProblem(sheet.id);
+      byId('problemId').value = '';
+      byId('problemName').value = name;
+      byId('problemNumber').value = '';
+      byId('problemDifficulty').value = 'Medium';
+      byId('problemTopic').value = 'Other';
+      byId('problemDate').value = today();
+      byId('problemNotes').value = 'From weekly roadmap.';
+      openTab('problems');
+      notify('Roadmap problem copied into the entry form.');
+    };
+
+    function renderFaangReview() {
+      const faangPatterns = [
+        ['Arrays & Hashing', ['Two Sum', 'Product of Array Except Self', 'Subarray Sum Equals K', 'Longest Consecutive Sequence']],
+        ['Sliding Window', ['Longest Substring Without Repeating Characters', 'Minimum Window Substring', 'Sliding Window Maximum']],
+        ['Trees', ['Binary Tree Level Order Traversal', 'Lowest Common Ancestor of a Binary Search Tree', 'Binary Tree Maximum Path Sum']],
+        ['Graphs', ['Number of Islands', 'Course Schedule', 'Clone Graph', 'Word Ladder']],
+        ['DP', ['Climbing Stairs', 'House Robber', 'Coin Change', 'Longest Common Subsequence', 'Edit Distance']],
+        ['Heaps', ['Top K Frequent Elements', 'Kth Largest Element in an Array', 'Merge k Sorted Lists']]
+      ];
+      const due = state.problems.filter(p => p.flag > 1 || getNextDue(p) <= today());
+      byId('faangSummary').innerHTML = [
+        ['Due/flagged revisions', `${due.length}`],
+        ['Core patterns', `${faangPatterns.length}`],
+        ['Advice', 'Prioritize flagged + FAANG frequent patterns before adding random hards.']
+      ].map(([a, b]) => `<div class="rounded-lg border border-slate-300 p-3 dark:border-line"><p class="text-sm text-slate-500">${a}</p><p class="mt-1 font-bold">${b}</p></div>`).join('');
+      const rows = [
+        ...due.slice(0, 10).map(p => ({ title: `Revise flagged: #${p.number} ${p.name}`, detail: `${p.topic} • ${flagLabel(p.flag)} • due ${fmt(getNextDue(p))}`, action: p.name })),
+        ...faangPatterns.flatMap(([pattern, names]) => names.filter(n => !isProblemSolvedName(n)).slice(0, 2).map(n => ({ title: `${pattern}: ${n}`, detail: 'High-frequency interview pattern', action: n })))
+      ].slice(0, 24);
+      byId('faangRevisionList').innerHTML = rows.length ? rows.map(r => `
+        <div class="flex items-start justify-between gap-3 rounded-md border border-slate-300 p-3 dark:border-line">
+          <div><p class="font-semibold">${escapeHtml(r.title)}</p><p class="text-sm text-slate-600 dark:text-slate-400">${escapeHtml(r.detail)}</p></div>
+          <button class="text-brand" onclick="addRoadmapProblem(decodeURIComponent('${encodeURIComponent(r.action)}'))">Add</button>
+        </div>`).join('') : '<p class="text-sm text-slate-500">No urgent revision items. Use this time for timed mocks.</p>';
+    }
 
     window.editJob = (id) => {
       const j = jobs.find(x => x.id === id);

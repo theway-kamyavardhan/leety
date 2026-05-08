@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "check": "node -c server.js"
+    "build": "tailwindcss -i ./src/input.css -o ./dist/styles.css --minify",
+    "check": "node -c server.js && node -c api/ai-coach.js",
+    "vercel-build": "npm run build"
   },
   "keywords": [
     "dsa",
@@ -16,5 +18,8 @@
     "static",
     "vercel"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
 }
