@@ -57,6 +57,7 @@
       <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="revisions"><i class="fa-solid fa-rotate-right"></i>Revisions</button>
       <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="faang"><i class="fa-solid fa-bullseye"></i>FAANG Review</button>
       <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="leetcode"><i class="fa-solid fa-code"></i>LeetCode Stats</button>
+      <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="aptitude"><i class="fa-solid fa-brain"></i>Aptitude + IELTS</button>
       <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="resume"><i class="fa-solid fa-file-lines"></i>Resume</button>
       <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="jobs"><i class="fa-solid fa-briefcase"></i>Jobs</button>
       <button class="tab-btn sidebar-link flex border border-transparent text-sm font-semibold text-slate-700 hover:bg-white/60 dark:text-slate-200 dark:hover:bg-white/5" data-tab="ai"><i class="fa-solid fa-wand-magic-sparkles"></i>AI Coach</button>
@@ -98,6 +99,7 @@
       <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="contests"><i class="fa-solid fa-trophy mr-2"></i>Contests</button>
       <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="hackathons"><i class="fa-solid fa-lightbulb mr-2"></i>Hackathons</button>
       <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="leetcode"><i class="fa-solid fa-code mr-2"></i>LeetCode Stats</button>
+      <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="aptitude"><i class="fa-solid fa-brain mr-2"></i>Aptitude + IELTS</button>
       <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="jobs"><i class="fa-solid fa-briefcase mr-2"></i>Job Applications</button>
       <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="planner"><i class="fa-solid fa-calendar-check mr-2"></i>Planner</button>
       <button class="tab-btn shrink-0 rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold dark:border-line" data-tab="ai"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i>AI Coach</button>
@@ -251,6 +253,73 @@
           <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
             <div id="leetcodeStats" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"></div>
             <canvas id="leetcodeChart" class="mt-4"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section id="aptitude" class="tab-panel">
+        <div class="grid gap-4 xl:grid-cols-[420px_1fr]">
+          <div class="space-y-4">
+            <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Placement + IELTS Command</h2>
+              <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Start with a diagnostic. The app adapts your daily plan using weak topics, scores, and test history.</p>
+              <div class="mt-4 grid gap-3">
+                <select id="aptitudeMode" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink">
+                  <option value="diagnostic">Initial Diagnostic</option>
+                  <option value="daily">Daily Adaptive Practice</option>
+                  <option value="quant">Quant Drill</option>
+                  <option value="verbal">Verbal Drill</option>
+                  <option value="reading">Reading Comprehension</option>
+                  <option value="ielts">IELTS Practice</option>
+                </select>
+                <select id="aptitudeTopic" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"></select>
+                <div class="grid grid-cols-2 gap-3">
+                  <input id="aptitudeCount" type="number" min="5" max="25" value="10" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink" />
+                  <select id="aptitudeDifficulty" class="rounded-md border border-slate-300 bg-white px-3 py-2 dark:border-line dark:bg-ink"><option>Mixed</option><option>Easy</option><option>Medium</option><option>Hard</option></select>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <button id="startAptitudeBtn" class="rounded-md bg-brand px-3 py-2 font-semibold text-white" type="button"><i class="fa-solid fa-play mr-2"></i>Start Test</button>
+                  <button id="generateAiAptitudeBtn" class="rounded-md bg-mint px-3 py-2 font-semibold text-white" type="button"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i>AI Questions</button>
+                  <button id="downloadSoulBtn" class="rounded-md border border-slate-300 px-3 py-2 font-semibold dark:border-line" type="button"><i class="fa-solid fa-file-arrow-down mr-2"></i>soul.md</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Subsections</h2>
+              <div id="aptitudeSubsections" class="mt-4 grid gap-2"></div>
+            </div>
+
+            <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Learn + References</h2>
+              <div id="aptitudeReferences" class="mt-4 grid gap-3"></div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="premium-card rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <h2 class="text-xl font-bold">Adaptive Daily Plan</h2>
+                  <p class="text-sm text-slate-600 dark:text-slate-400">Updates after every test. Prioritizes weak areas first.</p>
+                </div>
+                <div class="text-right"><p id="aptitudeOverallScore" class="text-4xl font-bold text-brand">--</p><p class="text-sm text-slate-500">overall avg</p></div>
+              </div>
+              <div id="aptitudePlan" class="mt-4 grid gap-3"></div>
+            </div>
+
+            <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <div class="flex items-center justify-between gap-3">
+                <h2 class="text-xl font-bold">Test Arena</h2>
+                <button id="submitAptitudeBtn" class="hidden rounded-md bg-brand px-3 py-2 font-semibold text-white" type="button"><i class="fa-solid fa-check mr-2"></i>Submit Test</button>
+              </div>
+              <div id="aptitudeQuiz" class="mt-4 grid gap-4"></div>
+            </div>
+
+            <div class="rounded-lg border border-slate-300 bg-white p-4 dark:border-line dark:bg-panel">
+              <h2 class="text-xl font-bold">Weakness Tracker</h2>
+              <div id="aptitudeWeakness" class="mt-4 grid gap-3 md:grid-cols-2"></div>
+            </div>
           </div>
         </div>
       </section>
@@ -568,6 +637,26 @@
     const STORAGE_KEY = 'dsaProgressState';
     const JOB_KEY = 'jobApplications';
     const topics = ['Arrays', 'Strings', 'Hashing', 'Two Pointers', 'Sliding Window', 'Trees', 'Graphs', 'DP', 'Heaps', 'Binary Search', 'Other'];
+    const aptitudeTopics = {
+      Quant: ['Percentages', 'Profit & Loss', 'Ratio & Proportion', 'Time & Work', 'Time Speed Distance', 'Averages', 'Number System', 'Permutations & Combinations', 'Probability', 'Data Interpretation'],
+      Verbal: ['Grammar', 'Vocabulary', 'Synonyms & Antonyms', 'Sentence Correction', 'Para Jumbles', 'Critical Reasoning', 'Fill in the Blanks'],
+      Reading: ['Main Idea', 'Inference', 'Tone', 'Detail Questions', 'Vocabulary in Context', 'Summary'],
+      IELTS: ['Listening Strategy', 'Reading Skimming', 'Writing Task 1', 'Writing Task 2', 'Speaking Part 1', 'Speaking Part 2', 'Speaking Part 3']
+    };
+    const aptitudeQuestionBank = [
+      { area: 'Quant', topic: 'Percentages', difficulty: 'Easy', q: 'A number is increased by 20% and then decreased by 20%. What is the net change?', options: ['No change', '4% decrease', '4% increase', '2% decrease'], answer: 1, explain: '1.2 x 0.8 = 0.96, so it is a 4% decrease.' },
+      { area: 'Quant', topic: 'Profit & Loss', difficulty: 'Easy', q: 'An item bought for 800 is sold for 1000. What is the profit percentage?', options: ['20%', '25%', '30%', '40%'], answer: 1, explain: 'Profit is 200 on cost 800, so 25%.' },
+      { area: 'Quant', topic: 'Ratio & Proportion', difficulty: 'Medium', q: 'If A:B = 2:3 and B:C = 4:5, what is A:C?', options: ['8:15', '2:5', '3:10', '4:9'], answer: 0, explain: 'Make B common: A:B=8:12, B:C=12:15, so A:C=8:15.' },
+      { area: 'Quant', topic: 'Time & Work', difficulty: 'Medium', q: 'A can complete work in 12 days and B in 18 days. Together they finish in?', options: ['6.5 days', '7.2 days', '8 days', '9 days'], answer: 1, explain: 'Rate = 1/12 + 1/18 = 5/36, time = 36/5 = 7.2 days.' },
+      { area: 'Quant', topic: 'Probability', difficulty: 'Medium', q: 'Two dice are rolled. Probability of sum 7?', options: ['1/12', '1/9', '1/6', '1/8'], answer: 2, explain: 'Six favorable outcomes out of 36.' },
+      { area: 'Verbal', topic: 'Grammar', difficulty: 'Easy', q: 'Choose the correct sentence.', options: ['She do not like tea.', 'She does not likes tea.', 'She does not like tea.', 'She not like tea.'], answer: 2, explain: 'With does, the main verb stays base form: like.' },
+      { area: 'Verbal', topic: 'Vocabulary', difficulty: 'Medium', q: 'Closest meaning of "pragmatic"?', options: ['Idealistic', 'Practical', 'Careless', 'Decorative'], answer: 1, explain: 'Pragmatic means practical and results-focused.' },
+      { area: 'Verbal', topic: 'Critical Reasoning', difficulty: 'Medium', q: 'A claim says productivity rose after remote work began. Which weakens it most?', options: ['Employees like remote work.', 'The company also introduced automation at the same time.', 'Office rent decreased.', 'Meetings became shorter.'], answer: 1, explain: 'Automation is an alternate cause for productivity rise.' },
+      { area: 'Reading', topic: 'Main Idea', difficulty: 'Easy', q: 'A passage argues that sleep improves memory, mood, and attention. What is the main idea?', options: ['Sleep wastes time', 'Sleep supports cognitive performance', 'Mood is unrelated to sleep', 'Attention cannot improve'], answer: 1, explain: 'The passage supports sleep as beneficial for cognition.' },
+      { area: 'Reading', topic: 'Inference', difficulty: 'Medium', q: 'If a passage says demand rose despite higher prices, what can be inferred?', options: ['The product may be highly valued', 'Prices always reduce demand', 'Demand disappeared', 'Supply was unlimited'], answer: 0, explain: 'Rising demand despite price suggests strong perceived value.' },
+      { area: 'IELTS', topic: 'Reading Skimming', difficulty: 'Easy', q: 'In IELTS Reading, what is skimming mainly used for?', options: ['Finding exact dates', 'Understanding overall idea quickly', 'Checking grammar', 'Writing examples'], answer: 1, explain: 'Skimming gives gist before answering detailed questions.' },
+      { area: 'IELTS', topic: 'Writing Task 2', difficulty: 'Medium', q: 'Best structure for an IELTS Task 2 opinion essay?', options: ['Intro, body 1, body 2, conclusion', 'Only bullet points', 'One long paragraph', 'Conclusion first only'], answer: 0, explain: 'Clear paragraph structure improves coherence and task response.' }
+    ];
     let sheetProblems = [
       { id: 'nc-contains-duplicate', sheet: 'NeetCode 150', name: 'Contains Duplicate', number: 217, difficulty: 'Easy', topic: 'Hashing', url: 'https://leetcode.com/problems/contains-duplicate/' },
       { id: 'nc-valid-anagram', sheet: 'NeetCode 150', name: 'Valid Anagram', number: 242, difficulty: 'Easy', topic: 'Strings', url: 'https://leetcode.com/problems/valid-anagram/' },
@@ -715,6 +804,12 @@
           lastScore: null,
           lastJobDescription: ''
         },
+        aptitude: {
+          tests: [],
+          currentQuiz: [],
+          dailyPlan: [],
+          weakTopics: {}
+        },
         settings: { goal: 300, theme: 'dark', leetcodeUsername: 'thewaykamyavardhan', openrouterModel: 'openrouter/auto', aiCoachMode: 'execution' },
         leetcodeStats: null,
         hackathons: generateMockHackathons()
@@ -731,7 +826,8 @@
           settings: { ...defaults.settings, ...(saved?.settings || {}) },
           planner: { ...defaults.planner, ...(saved?.planner || {}) },
           sheetProgress: { ...defaults.sheetProgress, ...(saved?.sheetProgress || {}) },
-          resume: { ...defaults.resume, ...(saved?.resume || {}) }
+          resume: { ...defaults.resume, ...(saved?.resume || {}) },
+          aptitude: { ...defaults.aptitude, ...(saved?.aptitude || {}) }
         };
       } catch { return defaultState(); }
     }
@@ -748,6 +844,7 @@
     async function init() {
       await loadSheetDataset();
       byId('problemTopic').innerHTML = topics.map(t => `<option>${t}</option>`).join('');
+      byId('aptitudeTopic').innerHTML = '<option value="Adaptive">Adaptive weakest topics</option>' + Object.entries(aptitudeTopics).map(([area, list]) => `<optgroup label="${area}">${list.map(t => `<option value="${area}|${t}">${t}</option>`).join('')}</optgroup>`).join('');
       byId('sheetTopicFilter').innerHTML = '<option value="All">All topics</option>' + topics.map(t => `<option>${t}</option>`).join('');
       byId('problemDate').value = today();
       byId('contestDate').value = today();
@@ -812,6 +909,10 @@
       byId('sheetTopicFilter').addEventListener('change', renderSheets);
       byId('sheetStatusFilter').addEventListener('change', renderSheets);
       byId('resumeFile').addEventListener('change', importResumeFile);
+      byId('startAptitudeBtn').addEventListener('click', startAptitudeTest);
+      byId('generateAiAptitudeBtn').addEventListener('click', generateAiAptitudeTest);
+      byId('submitAptitudeBtn').addEventListener('click', submitAptitudeTest);
+      byId('downloadSoulBtn').addEventListener('click', downloadSoulMarkdown);
       byId('saveResumeBtn').addEventListener('click', saveResumeSource);
       byId('clearResumeBtn').addEventListener('click', clearResumeSource);
       byId('tailorResumeBtn').addEventListener('click', tailorResume);
@@ -854,6 +955,7 @@
       renderSheets();
       renderWeeklyPlan();
       renderFaangReview();
+      renderAptitude();
     }
 
     function renderDashboard() {
@@ -1846,6 +1948,215 @@ Response format:
       }
     }
 
+    function renderAptitude() {
+      renderAptitudeSubsections();
+      renderAptitudePlan();
+      renderAptitudeWeakness();
+      renderAptitudeReferences();
+      renderAptitudeQuiz();
+    }
+
+    function renderAptitudeSubsections() {
+      byId('aptitudeSubsections').innerHTML = Object.entries(aptitudeTopics).map(([area, list]) => {
+        const avg = getAptitudeAreaAverage(area);
+        return `<div class="rounded-lg border border-slate-300 p-3 dark:border-line">
+          <div class="flex items-center justify-between"><p class="font-semibold">${area}</p><p class="text-sm text-slate-500">${avg === null ? 'untested' : `${avg}%`}</p></div>
+          <p class="mt-1 text-xs text-slate-500">${list.slice(0, 5).join(', ')}${list.length > 5 ? '...' : ''}</p>
+        </div>`;
+      }).join('');
+    }
+
+    function getAptitudeAreaAverage(area) {
+      const rows = state.aptitude.tests.flatMap(t => t.results || []).filter(r => r.area === area);
+      if (!rows.length) return null;
+      return Math.round((rows.filter(r => r.correct).length / rows.length) * 100);
+    }
+
+    function getAptitudeWeakMap() {
+      const map = {};
+      state.aptitude.tests.flatMap(t => t.results || []).forEach(r => {
+        const key = `${r.area}|${r.topic}`;
+        if (!map[key]) map[key] = { area: r.area, topic: r.topic, total: 0, correct: 0 };
+        map[key].total += 1;
+        if (r.correct) map[key].correct += 1;
+      });
+      return Object.values(map).map(x => ({ ...x, score: Math.round((x.correct / x.total) * 100) })).sort((a, b) => a.score - b.score || b.total - a.total);
+    }
+
+    function renderAptitudePlan() {
+      const weak = getAptitudeWeakMap();
+      const plan = buildAptitudeDailyPlan(weak);
+      state.aptitude.dailyPlan = plan;
+      const all = state.aptitude.tests.flatMap(t => t.results || []);
+      const overall = all.length ? Math.round((all.filter(r => r.correct).length / all.length) * 100) : null;
+      byId('aptitudeOverallScore').textContent = overall === null ? '--' : `${overall}%`;
+      byId('aptitudePlan').innerHTML = plan.map((item, index) => `
+        <div class="rounded-lg border border-slate-300 p-3 dark:border-line">
+          <p class="text-xs font-semibold uppercase tracking-wide text-brand">Day ${index + 1}</p>
+          <p class="mt-1 font-bold">${escapeHtml(item.focus)}</p>
+          <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">${escapeHtml(item.task)}</p>
+        </div>`).join('');
+    }
+
+    function buildAptitudeDailyPlan(weak) {
+      const fallback = [
+        ['Quant foundation', '20 min percentages/ratio + 10 MCQs'],
+        ['Verbal accuracy', '15 min grammar + 10 sentence correction questions'],
+        ['Reading stamina', '1 passage timed in 12 minutes + review mistakes'],
+        ['IELTS writing', 'Write one Task 2 intro + outline'],
+        ['Mixed test', '15-question mixed drill under timer'],
+        ['Vocabulary', '20 words + 5 contextual usage questions'],
+        ['Review', 'Redo wrong questions and update notes']
+      ];
+      const focus = weak.length ? weak.slice(0, 4) : [];
+      return fallback.map((item, index) => {
+        const weakItem = focus[index % Math.max(1, focus.length)];
+        return weakItem ? {
+          focus: `${weakItem.area}: ${weakItem.topic}`,
+          task: `Weak score ${weakItem.score}%. Learn concept for 15 min, solve 10 MCQs, review every wrong answer.`
+        } : { focus: item[0], task: item[1] };
+      });
+    }
+
+    function renderAptitudeWeakness() {
+      const weak = getAptitudeWeakMap();
+      byId('aptitudeWeakness').innerHTML = weak.length ? weak.slice(0, 8).map(w => `
+        <div class="rounded-lg border border-slate-300 p-3 dark:border-line">
+          <div class="flex items-center justify-between"><p class="font-semibold">${escapeHtml(w.topic)}</p><p class="${w.score < 60 ? 'text-danger' : 'text-mint'} font-bold">${w.score}%</p></div>
+          <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">${w.area} • ${w.correct}/${w.total} correct</p>
+        </div>`).join('') : '<p class="text-sm text-slate-500">Take the initial diagnostic to discover weak areas.</p>';
+    }
+
+    function renderAptitudeReferences() {
+      const weak = getAptitudeWeakMap()[0];
+      const topic = weak?.topic || 'Percentages';
+      const refs = [
+        ['Quant', 'CareerRide Aptitude / Feel Free To Learn', `https://www.youtube.com/results?search_query=${encodeURIComponent(topic + ' aptitude shortcut')}`],
+        ['Verbal', 'GMAT Ninja / English with Lucy', `https://www.youtube.com/results?search_query=${encodeURIComponent(topic + ' verbal aptitude')}`],
+        ['Reading', 'IELTS Liz / E2 IELTS', 'https://www.youtube.com/results?search_query=IELTS+reading+skimming+scanning+practice'],
+        ['IELTS', 'IELTS Liz, E2 IELTS, Fastrack IELTS', 'https://www.youtube.com/results?search_query=IELTS+writing+task+2+band+7+structure']
+      ];
+      byId('aptitudeReferences').innerHTML = refs.map(([area, channel, url]) => `
+        <a class="rounded-lg border border-slate-300 p-3 text-sm hover:bg-slate-50 dark:border-line dark:hover:bg-white/5" href="${url}" target="_blank" rel="noreferrer">
+          <p class="font-semibold">${area}: ${channel}</p>
+          <p class="mt-1 text-slate-600 dark:text-slate-400">Open focused YouTube references <i class="fa-solid fa-arrow-up-right-from-square ml-1"></i></p>
+        </a>`).join('');
+    }
+
+    function startAptitudeTest() {
+      const mode = byId('aptitudeMode').value;
+      const count = Number(byId('aptitudeCount').value || 10);
+      const topicValue = byId('aptitudeTopic').value;
+      let pool = [...aptitudeQuestionBank];
+      if (mode !== 'diagnostic' && mode !== 'daily') pool = pool.filter(q => q.area.toLowerCase() === mode);
+      if (topicValue && topicValue !== 'Adaptive') {
+        const [, topic] = topicValue.split('|');
+        pool = pool.filter(q => q.topic === topic);
+      } else if (mode === 'daily') {
+        const weakTopics = getAptitudeWeakMap().slice(0, 3).map(w => w.topic);
+        if (weakTopics.length) pool = pool.filter(q => weakTopics.includes(q.topic));
+      }
+      const quiz = shuffle(pool.length ? pool : aptitudeQuestionBank).slice(0, count);
+      state.aptitude.currentQuiz = quiz;
+      save();
+      renderAptitudeQuiz();
+      notify('Aptitude test started.');
+    }
+
+    async function generateAiAptitudeTest() {
+      const areaMode = byId('aptitudeMode').value;
+      const weak = getAptitudeWeakMap().slice(0, 5);
+      const prompt = `Create ${byId('aptitudeCount').value || 10} MCQs for placement aptitude and IELTS prep.
+Focus mode: ${areaMode}.
+Weak topics: ${JSON.stringify(weak)}.
+Return STRICT JSON only:
+{"questions":[{"area":"Quant|Verbal|Reading|IELTS","topic":"...","difficulty":"Easy|Medium|Hard","q":"question","options":["A","B","C","D"],"answer":0,"explain":"short explanation"}]}`;
+      try {
+        const text = await callAiForResume(prompt, { purpose: 'aptitude-mcq-generation' });
+        const jsonText = text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1);
+        const parsed = JSON.parse(jsonText);
+        if (!Array.isArray(parsed.questions)) throw new Error('AI did not return questions array');
+        state.aptitude.currentQuiz = parsed.questions.slice(0, 25);
+        save();
+        renderAptitudeQuiz();
+        notify('AI aptitude questions generated.');
+      } catch (err) {
+        notify(`AI generation failed. Using local bank. ${err.message}`, 'warn');
+        startAptitudeTest();
+      }
+    }
+
+    function renderAptitudeQuiz() {
+      const quiz = state.aptitude.currentQuiz || [];
+      byId('submitAptitudeBtn').classList.toggle('hidden', !quiz.length);
+      byId('aptitudeQuiz').innerHTML = quiz.length ? quiz.map((q, index) => `
+        <div class="rounded-lg border border-slate-300 p-4 dark:border-line">
+          <p class="text-xs font-semibold uppercase tracking-wide text-brand">${q.area} • ${q.topic} • ${q.difficulty}</p>
+          <p class="mt-2 font-semibold">${index + 1}. ${escapeHtml(q.q)}</p>
+          <div class="mt-3 grid gap-2">${q.options.map((option, optIndex) => `
+            <label class="flex gap-2 rounded-md border border-slate-200 p-2 text-sm dark:border-line">
+              <input type="radio" name="aptitude-q-${index}" value="${optIndex}" />
+              <span>${escapeHtml(option)}</span>
+            </label>`).join('')}</div>
+        </div>`).join('') : '<p class="text-sm text-slate-500">Start a diagnostic or daily practice test.</p>';
+    }
+
+    function submitAptitudeTest() {
+      const quiz = state.aptitude.currentQuiz || [];
+      if (!quiz.length) return;
+      const results = quiz.map((q, index) => {
+        const selected = document.querySelector(`input[name="aptitude-q-${index}"]:checked`);
+        const chosen = selected ? Number(selected.value) : null;
+        return { area: q.area, topic: q.topic, difficulty: q.difficulty, question: q.q, chosen, answer: q.answer, correct: chosen === q.answer, explain: q.explain };
+      });
+      const score = Math.round((results.filter(r => r.correct).length / results.length) * 100);
+      state.aptitude.tests.unshift({ id: uid(), date: today(), score, total: results.length, results });
+      state.aptitude.currentQuiz = [];
+      save();
+      renderAptitude();
+      notify(`Test scored ${score}%. Daily plan updated.`);
+    }
+
+    function shuffle(items) {
+      return [...items].sort(() => Math.random() - 0.5);
+    }
+
+    function downloadSoulMarkdown() {
+      const weak = getAptitudeWeakMap();
+      const lines = [
+        '# soul.md - Placement Prep Memory',
+        '',
+        `Updated: ${new Date().toISOString()}`,
+        '',
+        '## Aptitude Summary',
+        `Tests taken: ${state.aptitude.tests.length}`,
+        `Overall: ${byId('aptitudeOverallScore').textContent}`,
+        '',
+        '## Weak Topics',
+        ...weak.slice(0, 10).map(w => `- ${w.area} / ${w.topic}: ${w.score}% (${w.correct}/${w.total})`),
+        '',
+        '## Next 7-Day Plan',
+        ...buildAptitudeDailyPlan(weak).map((p, i) => `- Day ${i + 1}: ${p.focus} - ${p.task}`),
+        '',
+        '## Tracker Snapshot',
+        `DSA solved: ${state.problems.length}`,
+        `Job applications: ${jobs.length}`,
+        `Mocks: ${state.planner.mocks.length}`,
+        '',
+        'Use this file as a portable memory/reference. Browser apps cannot silently write to repo files, so download this after major tests.'
+      ];
+      const blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'soul.md';
+      a.click();
+      URL.revokeObjectURL(url);
+      notify('soul.md downloaded.');
+    }
+
+    function escapeRegExpForQuery(value) { return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
     async function extractPdfText(file) {
       const pdfjs = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
       pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
@@ -2081,7 +2392,8 @@ Important rules:
             settings: { ...defaults.settings, ...(data.settings || {}) },
             planner: { ...defaults.planner, ...(data.planner || {}) },
             sheetProgress: { ...defaults.sheetProgress, ...(data.sheetProgress || {}) },
-            resume: { ...defaults.resume, ...(data.resume || {}) }
+            resume: { ...defaults.resume, ...(data.resume || {}) },
+            aptitude: { ...defaults.aptitude, ...(data.aptitude || {}) }
           };
           jobs = data.jobApplications || data.jobs || [];
           save();
